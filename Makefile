@@ -62,23 +62,24 @@ endif
 CC=gcc
 CXX=g++
 LD=$(CXX) $(OPT) $(MARCH)
-INCLUDE=-I. -Icore $(EXR_INCLUDES) $(TIFF_INCLUDES)
+SRC=src
+INCLUDE=-I$(SRC) -I$(SRC)/core $(EXR_INCLUDES) $(TIFF_INCLUDES)
 WARN=-Wall
 CWD=$(shell pwd)
 CXXFLAGS=$(OPT) $(MARCH) $(INCLUDE) $(WARN) $(DEFS)
 CCFLAGS=$(CXXFLAGS)
 LIBS=$(LEXLIB) $(EXR_LIBDIR) $(EXRLIBS) -lm 
 
-LIB_CSRCS=core/targa.c
-LIB_CXXSRCS  = $(wildcard core/*.cpp) core/pbrtlex.cpp core/pbrtparse.cpp
-LIB_CXXSRCS += $(wildcard accelerators/*.cpp cameras/*.cpp film/*.cpp filters/*.cpp )
-LIB_CXXSRCS += $(wildcard integrators/*.cpp lights/*.cpp materials/*.cpp renderers/*.cpp )
-LIB_CXXSRCS += $(wildcard samplers/*.cpp shapes/*.cpp textures/*.cpp volumes/*.cpp)
+LIB_CSRCS=$(SRC)/core/targa.c
+LIB_CXXSRCS  = $(wildcard $(SRC)/core/*.cpp) $(SRC)/core/pbrtlex.cpp $(SRC)/core/pbrtparse.cpp
+LIB_CXXSRCS += $(wildcard $(SRC)/accelerators/*.cpp $(SRC)/cameras/*.cpp $(SRC)/film/*.cpp $(SRC)/filters/*.cpp )
+LIB_CXXSRCS += $(wildcard $(SRC)/integrators/*.cpp $(SRC)/lights/*.cpp $(SRC)/materials/*.cpp $(SRC)/renderers/*.cpp )
+LIB_CXXSRCS += $(wildcard $(SRC)/samplers/*.cpp $(SRC)/shapes/*.cpp $(SRC)/textures/*.cpp $(SRC)/volumes/*.cpp)
 
-LIBOBJS  = $(addprefix objs/, $(subst /,_,$(LIB_CSRCS:.c=.o)))
-LIBOBJS += $(addprefix objs/, $(subst /,_,$(LIB_CXXSRCS:.cpp=.o)))
+LIBOBJS  = $(addprefix objs/, $(subst /,_,$(subst $(SRC)/,,$(LIB_CSRCS:.c=.o))))
+LIBOBJS += $(addprefix objs/, $(subst /,_,$(subst $(SRC)/,,$(LIB_CXXSRCS:.cpp=.o))))
 
-HEADERS = $(wildcard */*.h)
+HEADERS = $(wildcard $(SRC)/*/*.h)
 
 TOOLS = bin/bsdftest bin/exravg bin/exrdiff
 ifeq ($(HAVE_LIBTIFF),1)
@@ -100,73 +101,74 @@ $(LIBOBJS): $(HEADERS)
 
 objs/libpbrt.a: $(LIBOBJS)
 	@echo "Building the core rendering library (libpbrt.a)"
+	@echo "$(LIBOBJS)"
 	@ar rcs $@ $(LIBOBJS)
 
-objs/accelerators_%.o: accelerators/%.cpp
+objs/accelerators_%.o: $(SRC)/accelerators/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/cameras_%.o: cameras/%.cpp
+objs/cameras_%.o: $(SRC)/cameras/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/core_%.o: core/%.cpp
+objs/core_%.o: $(SRC)/core/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/core_%.o: core/%.c
+objs/core_%.o: $(SRC)/core/%.c
 	@echo "Building object $@"
 	@$(CC) $(CCFLAGS) -o $@ -c $<
 
-objs/film_%.o: film/%.cpp
+objs/film_%.o: $(SRC)/film/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/filters_%.o: filters/%.cpp
+objs/filters_%.o: $(SRC)/filters/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/integrators_%.o: integrators/%.cpp
+objs/integrators_%.o: $(SRC)/integrators/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/lights_%.o: lights/%.cpp
+objs/lights_%.o: $(SRC)/lights/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/main_%.o: main/%.cpp
+objs/main_%.o: $(SRC)/main/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/materials_%.o: materials/%.cpp
+objs/materials_%.o: $(SRC)/materials/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/renderers_%.o: renderers/%.cpp
+objs/renderers_%.o: $(SRC)/renderers/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/samplers_%.o: samplers/%.cpp
+objs/samplers_%.o: $(SRC)/samplers/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/shapes_%.o: shapes/%.cpp
+objs/shapes_%.o: $(SRC)/shapes/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/textures_%.o: textures/%.cpp
+objs/textures_%.o: $(SRC)/textures/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/volumes_%.o: volumes/%.cpp
+objs/volumes_%.o: $(SRC)/volumes/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/pbrt.o: main/pbrt.cpp
+objs/pbrt.o: $(SRC)/main/pbrt.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-objs/tools_%.o: tools/%.cpp
+objs/tools_%.o: $(SRC)/tools/%.cpp
 	@echo "Building object $@"
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
@@ -182,24 +184,24 @@ bin/exrtotiff: objs/tools_exrtotiff.o
 	@echo "Linking $@"
 	@$(CXX) $(CXXFLAGS) -o $@ $^ $(TIFF_LIBDIR) -ltiff $(LIBS) 
 
-core/pbrtlex.cpp: core/pbrtlex.ll core/pbrtparse.cpp
+$(SRC)/core/pbrtlex.cpp: $(SRC)/core/pbrtlex.ll $(SRC)/core/pbrtparse.cpp
 	@echo "Lex'ing pbrtlex.ll"
-	@$(LEX) -o$@ core/pbrtlex.ll
+	@$(LEX) -o$@ $(SRC)/core/pbrtlex.ll
 
-core/pbrtparse.cpp: core/pbrtparse.yy
+$(SRC)/core/pbrtparse.cpp: $(SRC)/core/pbrtparse.yy
 	@echo "YACC'ing pbrtparse.yy"
-	@$(YACC) -o $@ core/pbrtparse.yy
-	@if [ -e core/pbrtparse.cpp.h ]; then /bin/mv core/pbrtparse.cpp.h core/pbrtparse.hh; fi
-	@if [ -e core/pbrtparse.hpp ]; then /bin/mv core/pbrtparse.hpp core/pbrtparse.hh; fi
+	@$(YACC) -o $@ $(SRC)/core/pbrtparse.yy
+	@if [ -e $(SRC)/core/pbrtparse.cpp.h ]; then /bin/mv $(SRC)/core/pbrtparse.cpp.h $(SRC)/core/pbrtparse.hh; fi
+	@if [ -e $(SRC)/core/pbrtparse.hpp ]; then /bin/mv $(SRC)/core/pbrtparse.hpp $(SRC)/core/pbrtparse.hh; fi
 
 ifeq ($(HAVE_DTRACE),1)
-core/dtrace.h: core/dtrace.d
+$(SRC)/core/dtrace.h: $(SRC)/core/dtrace.d
 	/usr/sbin/dtrace -h -s $^ -o $@
 
-$(LIBOBJS): core/dtrace.h
+$(LIBOBJS): $(SRC)/core/dtrace.h
 endif
 
 $(RENDERER_BINARY): $(RENDERER_OBJS) $(CORE_LIB)
 
 clean:
-	rm -f objs/* bin/* core/pbrtlex.[ch]* core/pbrtparse.[ch]*
+	rm -f objs/* bin/* $(SRC)/core/pbrtlex.[ch]* $(SRC)/core/pbrtparse.[ch]*

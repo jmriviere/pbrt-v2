@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 2.5.  */
+/* A Bison parser, made by GNU Bison 2.7.12-4996.  */
 
 /* Bison implementation for Yacc-like parsers in C
    
-      Copyright (C) 1984, 1989-1990, 2000-2011 Free Software Foundation, Inc.
+      Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.5"
+#define YYBISON_VERSION "2.7.12-4996"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -58,15 +58,12 @@
 /* Pull parsers.  */
 #define YYPULL 1
 
-/* Using locations.  */
-#define YYLSP_NEEDED 0
 
 
 
 /* Copy the first part of user declarations.  */
-
-/* Line 268 of yacc.c  */
-#line 24 "core/pbrtparse.yy"
+/* Line 371 of yacc.c  */
+#line 32 "src/core/pbrtparse.yy"
 
 #include "api.h"
 #include "pbrt.h"
@@ -87,7 +84,8 @@ string current_file;
 #define YYMAXDEPTH 100000000
 
 void yyerror(const char *str) {
-    Severe("Parsing error: %s", str);
+    Error("Parsing error: %s", str);
+    exit(1);
 }
 
 
@@ -190,14 +188,16 @@ static bool lookupType(const char *name, int *type, string &sname);
 
 
 
+/* Line 371 of yacc.c  */
+#line 193 "src/core/pbrtparse.cpp"
 
-/* Line 268 of yacc.c  */
-#line 196 "core/pbrtparse.cpp"
-
-/* Enabling traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 1
-#endif
+# ifndef YY_NULL
+#  if defined __cplusplus && 201103L <= __cplusplus
+#   define YY_NULL nullptr
+#  else
+#   define YY_NULL 0
+#  endif
+# endif
 
 /* Enabling verbose error messages.  */
 #ifdef YYERROR_VERBOSE
@@ -207,11 +207,17 @@ static bool lookupType(const char *name, int *type, string &sname);
 # define YYERROR_VERBOSE 0
 #endif
 
-/* Enabling the token table.  */
-#ifndef YYTOKEN_TABLE
-# define YYTOKEN_TABLE 0
+/* In a future release of Bison, this section will be replaced
+   by #include "pbrtparse.hpp".  */
+#ifndef YY_YY_SRC_CORE_PBRTPARSE_HPP_INCLUDED
+# define YY_YY_SRC_CORE_PBRTPARSE_HPP_INCLUDED
+/* Enabling traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 1
 #endif
-
+#if YYDEBUG
+extern int yydebug;
+#endif
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -270,34 +276,47 @@ static bool lookupType(const char *name, int *type, string &sname);
 #endif
 
 
-
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
 {
-
-/* Line 301 of yacc.c  */
-#line 148 "core/pbrtparse.yy"
+/* Line 387 of yacc.c  */
+#line 157 "src/core/pbrtparse.yy"
 
 char string[1024];
 float num;
 ParamArray *ribarray;
 
 
-
-/* Line 301 of yacc.c  */
-#line 289 "core/pbrtparse.cpp"
+/* Line 387 of yacc.c  */
+#line 292 "src/core/pbrtparse.cpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 #endif
 
+extern YYSTYPE yylval;
+
+#ifdef YYPARSE_PARAM
+#if defined __STDC__ || defined __cplusplus
+int yyparse (void *YYPARSE_PARAM);
+#else
+int yyparse ();
+#endif
+#else /* ! YYPARSE_PARAM */
+#if defined __STDC__ || defined __cplusplus
+int yyparse (void);
+#else
+int yyparse ();
+#endif
+#endif /* ! YYPARSE_PARAM */
+
+#endif /* !YY_YY_SRC_CORE_PBRTPARSE_HPP_INCLUDED  */
 
 /* Copy the second part of user declarations.  */
 
-
-/* Line 343 of yacc.c  */
-#line 301 "core/pbrtparse.cpp"
+/* Line 390 of yacc.c  */
+#line 320 "src/core/pbrtparse.cpp"
 
 #ifdef short
 # undef short
@@ -350,24 +369,33 @@ typedef short int yytype_int16;
 # if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* INFRINGES ON USER NAME SPACE */
-#   define YY_(msgid) dgettext ("bison-runtime", msgid)
+#   define YY_(Msgid) dgettext ("bison-runtime", Msgid)
 #  endif
 # endif
 # ifndef YY_
-#  define YY_(msgid) msgid
+#  define YY_(Msgid) Msgid
+# endif
+#endif
+
+#ifndef __attribute__
+/* This feature is available in gcc versions 2.5 and later.  */
+# if (! defined __GNUC__ || __GNUC__ < 2 \
+      || (__GNUC__ == 2 && __GNUC_MINOR__ < 5))
+#  define __attribute__(Spec) /* empty */
 # endif
 #endif
 
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
-# define YYUSE(e) ((void) (e))
+# define YYUSE(E) ((void) (E))
 #else
-# define YYUSE(e) /* empty */
+# define YYUSE(E) /* empty */
 #endif
+
 
 /* Identity function, used to suppress warnings about constant conditions.  */
 #ifndef lint
-# define YYID(n) (n)
+# define YYID(N) (N)
 #else
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
@@ -403,6 +431,7 @@ YYID (yyi)
 #    if ! defined _ALLOCA_H && ! defined EXIT_SUCCESS && (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 #     include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
+      /* Use EXIT_SUCCESS as a witness for stdlib.h.  */
 #     ifndef EXIT_SUCCESS
 #      define EXIT_SUCCESS 0
 #     endif
@@ -494,20 +523,20 @@ union yyalloc
 #endif
 
 #if defined YYCOPY_NEEDED && YYCOPY_NEEDED
-/* Copy COUNT objects from FROM to TO.  The source and destination do
+/* Copy COUNT objects from SRC to DST.  The source and destination do
    not overlap.  */
 # ifndef YYCOPY
 #  if defined __GNUC__ && 1 < __GNUC__
-#   define YYCOPY(To, From, Count) \
-      __builtin_memcpy (To, From, (Count) * sizeof (*(From)))
+#   define YYCOPY(Dst, Src, Count) \
+      __builtin_memcpy (Dst, Src, (Count) * sizeof (*(Src)))
 #  else
-#   define YYCOPY(To, From, Count)		\
-      do					\
-	{					\
-	  YYSIZE_T yyi;				\
-	  for (yyi = 0; yyi < (Count); yyi++)	\
-	    (To)[yyi] = (From)[yyi];		\
-	}					\
+#   define YYCOPY(Dst, Src, Count)              \
+      do                                        \
+        {                                       \
+          YYSIZE_T yyi;                         \
+          for (yyi = 0; yyi < (Count); yyi++)   \
+            (Dst)[yyi] = (Src)[yyi];            \
+        }                                       \
       while (YYID (0))
 #  endif
 # endif
@@ -613,17 +642,17 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   171,   171,   177,   185,   193,   201,   207,   214,   221,
-     229,   235,   240,   246,   254,   261,   269,   275,   280,   286,
-     294,   300,   313,   319,   324,   332,   337,   343,   352,   358,
-     364,   370,   379,   385,   391,   400,   408,   414,   420,   429,
-     435,   441,   450,   456,   465,   474,   480,   486,   492,   498,
-     507,   516,   522,   528,   537,   543,   552,   561,   570,   576,
-     582,   588,   596,   602,   611,   620,   626
+       0,   180,   180,   186,   194,   202,   210,   216,   223,   230,
+     238,   244,   249,   255,   263,   270,   278,   284,   289,   295,
+     303,   309,   322,   328,   333,   341,   346,   352,   361,   367,
+     373,   379,   388,   394,   400,   409,   417,   423,   429,   438,
+     444,   450,   459,   465,   474,   483,   489,   495,   501,   507,
+     516,   525,   531,   537,   546,   552,   561,   570,   579,   585,
+     591,   597,   605,   611,   620,   629,   635
 };
 #endif
 
-#if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
+#if YYDEBUG || YYERROR_VERBOSE || 0
 /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
@@ -643,7 +672,7 @@ static const char *const yytname[] =
   "string_list", "string_list_entry", "num_array",
   "single_element_num_array", "num_list", "num_list_entry", "paramlist",
   "paramlist_init", "paramlist_contents", "paramlist_entry",
-  "pbrt_stmt_list", "pbrt_stmt", 0
+  "pbrt_stmt_list", "pbrt_stmt", YY_NULL
 };
 #endif
 
@@ -760,10 +789,10 @@ static const yytype_int16 yytable[] =
      126,    -5,   129,   130,   131,   133,   134,   135,    76
 };
 
-#define yypact_value_is_default(yystate) \
-  ((yystate) == (-119))
+#define yypact_value_is_default(Yystate) \
+  (!!((Yystate) == (-119)))
 
-#define yytable_value_is_error(yytable_value) \
+#define yytable_value_is_error(Yytable_value) \
   YYID (0)
 
 static const yytype_uint8 yycheck[] =
@@ -829,62 +858,35 @@ static const yytype_uint8 yystos[] =
 
 #define YYRECOVERING()  (!!yyerrstatus)
 
-#define YYBACKUP(Token, Value)					\
-do								\
-  if (yychar == YYEMPTY && yylen == 1)				\
-    {								\
-      yychar = (Token);						\
-      yylval = (Value);						\
-      YYPOPSTACK (1);						\
-      goto yybackup;						\
-    }								\
-  else								\
-    {								\
+#define YYBACKUP(Token, Value)                                  \
+do                                                              \
+  if (yychar == YYEMPTY)                                        \
+    {                                                           \
+      yychar = (Token);                                         \
+      yylval = (Value);                                         \
+      YYPOPSTACK (yylen);                                       \
+      yystate = *yyssp;                                         \
+      goto yybackup;                                            \
+    }                                                           \
+  else                                                          \
+    {                                                           \
       yyerror (YY_("syntax error: cannot back up")); \
       YYERROR;							\
     }								\
 while (YYID (0))
 
-
+/* Error token number */
 #define YYTERROR	1
 #define YYERRCODE	256
 
 
-/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
-   If N is 0, then set CURRENT to the empty location which ends
-   the previous symbol: RHS[0] (always defined).  */
-
-#define YYRHSLOC(Rhs, K) ((Rhs)[K])
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)				\
-    do									\
-      if (YYID (N))                                                    \
-	{								\
-	  (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;	\
-	  (Current).first_column = YYRHSLOC (Rhs, 1).first_column;	\
-	  (Current).last_line    = YYRHSLOC (Rhs, N).last_line;		\
-	  (Current).last_column  = YYRHSLOC (Rhs, N).last_column;	\
-	}								\
-      else								\
-	{								\
-	  (Current).first_line   = (Current).last_line   =		\
-	    YYRHSLOC (Rhs, 0).last_line;				\
-	  (Current).first_column = (Current).last_column =		\
-	    YYRHSLOC (Rhs, 0).last_column;				\
-	}								\
-    while (YYID (0))
-#endif
-
-
 /* This macro is provided for backward compatibility. */
-
 #ifndef YY_LOCATION_PRINT
 # define YY_LOCATION_PRINT(File, Loc) ((void) 0)
 #endif
 
 
 /* YYLEX -- calling `yylex' with the right arguments.  */
-
 #ifdef YYLEX_PARAM
 # define YYLEX yylex (YYLEX_PARAM)
 #else
@@ -934,6 +936,8 @@ yy_symbol_value_print (yyoutput, yytype, yyvaluep)
     YYSTYPE const * const yyvaluep;
 #endif
 {
+  FILE *yyo = yyoutput;
+  YYUSE (yyo);
   if (!yyvaluep)
     return;
 # ifdef YYPRINT
@@ -942,11 +946,7 @@ yy_symbol_value_print (yyoutput, yytype, yyvaluep)
 # else
   YYUSE (yyoutput);
 # endif
-  switch (yytype)
-    {
-      default:
-	break;
-    }
+  YYUSE (yytype);
 }
 
 
@@ -1185,12 +1185,11 @@ static int
 yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
                 yytype_int16 *yyssp, int yytoken)
 {
-  YYSIZE_T yysize0 = yytnamerr (0, yytname[yytoken]);
+  YYSIZE_T yysize0 = yytnamerr (YY_NULL, yytname[yytoken]);
   YYSIZE_T yysize = yysize0;
-  YYSIZE_T yysize1;
   enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
   /* Internationalized format string. */
-  const char *yyformat = 0;
+  const char *yyformat = YY_NULL;
   /* Arguments of yyformat. */
   char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
   /* Number of reported tokens (one for the "unexpected", one per
@@ -1250,11 +1249,13 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
                     break;
                   }
                 yyarg[yycount++] = yytname[yyx];
-                yysize1 = yysize + yytnamerr (0, yytname[yyx]);
-                if (! (yysize <= yysize1
-                       && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
-                  return 2;
-                yysize = yysize1;
+                {
+                  YYSIZE_T yysize1 = yysize + yytnamerr (YY_NULL, yytname[yyx]);
+                  if (! (yysize <= yysize1
+                         && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
+                    return 2;
+                  yysize = yysize1;
+                }
               }
         }
     }
@@ -1274,10 +1275,12 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
 # undef YYCASE_
     }
 
-  yysize1 = yysize + yystrlen (yyformat);
-  if (! (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
-    return 2;
-  yysize = yysize1;
+  {
+    YYSIZE_T yysize1 = yysize + yystrlen (yyformat);
+    if (! (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
+      return 2;
+    yysize = yysize1;
+  }
 
   if (*yymsg_alloc < yysize)
     {
@@ -1333,36 +1336,26 @@ yydestruct (yymsg, yytype, yyvaluep)
     yymsg = "Deleting";
   YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
 
-  switch (yytype)
-    {
-
-      default:
-	break;
-    }
+  YYUSE (yytype);
 }
 
 
-/* Prevent warnings from -Wmissing-prototypes.  */
-#ifdef YYPARSE_PARAM
-#if defined __STDC__ || defined __cplusplus
-int yyparse (void *YYPARSE_PARAM);
-#else
-int yyparse ();
-#endif
-#else /* ! YYPARSE_PARAM */
-#if defined __STDC__ || defined __cplusplus
-int yyparse (void);
-#else
-int yyparse ();
-#endif
-#endif /* ! YYPARSE_PARAM */
 
 
 /* The lookahead symbol.  */
 int yychar;
 
+
+#ifndef YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+# define YY_IGNORE_MAYBE_UNINITIALIZED_END
+#endif
+#ifndef YY_INITIAL_VALUE
+# define YY_INITIAL_VALUE(Value) /* Nothing. */
+#endif
+
 /* The semantic value of the lookahead symbol.  */
-YYSTYPE yylval;
+YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
 
 /* Number of syntax errors so far.  */
 int yynerrs;
@@ -1402,7 +1395,7 @@ yyparse ()
        `yyss': related to states.
        `yyvs': related to semantic values.
 
-       Refer to the stacks thru separate pointers, to allow yyoverflow
+       Refer to the stacks through separate pointers, to allow yyoverflow
        to reallocate them elsewhere.  */
 
     /* The state stack.  */
@@ -1420,7 +1413,7 @@ yyparse ()
   int yyn;
   int yyresult;
   /* Lookahead token as an internal (translated) token number.  */
-  int yytoken;
+  int yytoken = 0;
   /* The variables used to return semantic value and location from the
      action routines.  */
   YYSTYPE yyval;
@@ -1438,9 +1431,8 @@ yyparse ()
      Keep to zero when no symbol should be popped.  */
   int yylen = 0;
 
-  yytoken = 0;
-  yyss = yyssa;
-  yyvs = yyvsa;
+  yyssp = yyss = yyssa;
+  yyvsp = yyvs = yyvsa;
   yystacksize = YYINITDEPTH;
 
   YYDPRINTF ((stderr, "Starting parse\n"));
@@ -1449,14 +1441,6 @@ yyparse ()
   yyerrstatus = 0;
   yynerrs = 0;
   yychar = YYEMPTY; /* Cause a token to be read.  */
-
-  /* Initialize stack pointers.
-     Waste one element of value and location stack
-     so that they stay on the same level as the state stack.
-     The wasted elements are never initialized.  */
-  yyssp = yyss;
-  yyvsp = yyvs;
-
   goto yysetstate;
 
 /*------------------------------------------------------------.
@@ -1597,7 +1581,9 @@ yybackup:
   yychar = YYEMPTY;
 
   yystate = yyn;
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
 
   goto yynewstate;
 
@@ -1634,17 +1620,15 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-
-/* Line 1821 of yacc.c  */
-#line 172 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 181 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 3:
-
-/* Line 1821 of yacc.c  */
-#line 178 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 187 "src/core/pbrtparse.yy"
     {
     if (cur_array) Severe("MUH");
     cur_array = new ParamArray;
@@ -1652,9 +1636,8 @@ yyreduce:
     break;
 
   case 4:
-
-/* Line 1821 of yacc.c  */
-#line 186 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 195 "src/core/pbrtparse.yy"
     {
     cur_array->element_size = sizeof(const char *);
     cur_array->isString = true;
@@ -1662,9 +1645,8 @@ yyreduce:
     break;
 
   case 5:
-
-/* Line 1821 of yacc.c  */
-#line 194 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 203 "src/core/pbrtparse.yy"
     {
     cur_array->element_size = sizeof(float);
     cur_array->isString = false;
@@ -1672,27 +1654,24 @@ yyreduce:
     break;
 
   case 6:
-
-/* Line 1821 of yacc.c  */
-#line 202 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 211 "src/core/pbrtparse.yy"
     {
     (yyval.ribarray) = (yyvsp[(1) - (1)].ribarray);
 }
     break;
 
   case 7:
-
-/* Line 1821 of yacc.c  */
-#line 208 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 217 "src/core/pbrtparse.yy"
     {
     (yyval.ribarray) = (yyvsp[(1) - (1)].ribarray);
 }
     break;
 
   case 8:
-
-/* Line 1821 of yacc.c  */
-#line 215 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 224 "src/core/pbrtparse.yy"
     {
     (yyval.ribarray) = cur_array;
     cur_array = NULL;
@@ -1700,9 +1679,8 @@ yyreduce:
     break;
 
   case 9:
-
-/* Line 1821 of yacc.c  */
-#line 222 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 231 "src/core/pbrtparse.yy"
     {
     (yyval.ribarray) = cur_array;
     cur_array = NULL;
@@ -1710,33 +1688,29 @@ yyreduce:
     break;
 
   case 10:
-
-/* Line 1821 of yacc.c  */
-#line 230 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 239 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 11:
-
-/* Line 1821 of yacc.c  */
-#line 236 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 245 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 12:
-
-/* Line 1821 of yacc.c  */
-#line 241 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 250 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 13:
-
-/* Line 1821 of yacc.c  */
-#line 247 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 256 "src/core/pbrtparse.yy"
     {
     char *to_add = strdup((yyvsp[(2) - (2)].string));
     AddArrayElement(&to_add);
@@ -1744,9 +1718,8 @@ yyreduce:
     break;
 
   case 14:
-
-/* Line 1821 of yacc.c  */
-#line 255 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 264 "src/core/pbrtparse.yy"
     {
     (yyval.ribarray) = cur_array;
     cur_array = NULL;
@@ -1754,9 +1727,8 @@ yyreduce:
     break;
 
   case 15:
-
-/* Line 1821 of yacc.c  */
-#line 262 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 271 "src/core/pbrtparse.yy"
     {
     (yyval.ribarray) = cur_array;
     cur_array = NULL;
@@ -1764,33 +1736,29 @@ yyreduce:
     break;
 
   case 16:
-
-/* Line 1821 of yacc.c  */
-#line 270 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 279 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 17:
-
-/* Line 1821 of yacc.c  */
-#line 276 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 285 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 18:
-
-/* Line 1821 of yacc.c  */
-#line 281 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 290 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 19:
-
-/* Line 1821 of yacc.c  */
-#line 287 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 296 "src/core/pbrtparse.yy"
     {
     float to_add = (yyvsp[(2) - (2)].num);
     AddArrayElement(&to_add);
@@ -1798,17 +1766,15 @@ yyreduce:
     break;
 
   case 20:
-
-/* Line 1821 of yacc.c  */
-#line 295 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 304 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 21:
-
-/* Line 1821 of yacc.c  */
-#line 301 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 310 "src/core/pbrtparse.yy"
     {
     for (uint32_t i = 0; i < cur_paramlist.size(); ++i) {
         if (cur_paramlist[i].isString) {
@@ -1821,25 +1787,22 @@ yyreduce:
     break;
 
   case 22:
-
-/* Line 1821 of yacc.c  */
-#line 314 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 323 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 23:
-
-/* Line 1821 of yacc.c  */
-#line 319 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 328 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 24:
-
-/* Line 1821 of yacc.c  */
-#line 325 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 334 "src/core/pbrtparse.yy"
     {
     cur_paramlist.push_back(ParamListItem((yyvsp[(1) - (2)].string), (yyvsp[(2) - (2)].ribarray)));
     ArrayFree((yyvsp[(2) - (2)].ribarray));
@@ -1847,25 +1810,22 @@ yyreduce:
     break;
 
   case 25:
-
-/* Line 1821 of yacc.c  */
-#line 333 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 342 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 26:
-
-/* Line 1821 of yacc.c  */
-#line 338 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 347 "src/core/pbrtparse.yy"
     {
 }
     break;
 
   case 27:
-
-/* Line 1821 of yacc.c  */
-#line 344 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 353 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -1875,36 +1835,32 @@ yyreduce:
     break;
 
   case 28:
-
-/* Line 1821 of yacc.c  */
-#line 353 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 362 "src/core/pbrtparse.yy"
     {
     pbrtActiveTransformAll();
 }
     break;
 
   case 29:
-
-/* Line 1821 of yacc.c  */
-#line 359 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 368 "src/core/pbrtparse.yy"
     {
     pbrtActiveTransformEndTime();
 }
     break;
 
   case 30:
-
-/* Line 1821 of yacc.c  */
-#line 365 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 374 "src/core/pbrtparse.yy"
     {
     pbrtActiveTransformStartTime();
 }
     break;
 
   case 31:
-
-/* Line 1821 of yacc.c  */
-#line 371 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 380 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_ILLUMINANT);
@@ -1914,27 +1870,24 @@ yyreduce:
     break;
 
   case 32:
-
-/* Line 1821 of yacc.c  */
-#line 380 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 389 "src/core/pbrtparse.yy"
     {
     pbrtAttributeBegin();
 }
     break;
 
   case 33:
-
-/* Line 1821 of yacc.c  */
-#line 386 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 395 "src/core/pbrtparse.yy"
     {
     pbrtAttributeEnd();
 }
     break;
 
   case 34:
-
-/* Line 1821 of yacc.c  */
-#line 392 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 401 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -1944,9 +1897,8 @@ yyreduce:
     break;
 
   case 35:
-
-/* Line 1821 of yacc.c  */
-#line 401 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 410 "src/core/pbrtparse.yy"
     {
     if (VerifyArrayLength((yyvsp[(2) - (2)].ribarray), 16, "ConcatTransform"))
         pbrtConcatTransform((float *) (yyvsp[(2) - (2)].ribarray)->array);
@@ -1955,27 +1907,24 @@ yyreduce:
     break;
 
   case 36:
-
-/* Line 1821 of yacc.c  */
-#line 409 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 418 "src/core/pbrtparse.yy"
     {
     pbrtCoordinateSystem((yyvsp[(2) - (2)].string));
 }
     break;
 
   case 37:
-
-/* Line 1821 of yacc.c  */
-#line 415 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 424 "src/core/pbrtparse.yy"
     {
     pbrtCoordSysTransform((yyvsp[(2) - (2)].string));
 }
     break;
 
   case 38:
-
-/* Line 1821 of yacc.c  */
-#line 421 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 430 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -1985,27 +1934,24 @@ yyreduce:
     break;
 
   case 39:
-
-/* Line 1821 of yacc.c  */
-#line 430 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 439 "src/core/pbrtparse.yy"
     {
     pbrtIdentity();
 }
     break;
 
   case 40:
-
-/* Line 1821 of yacc.c  */
-#line 436 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 445 "src/core/pbrtparse.yy"
     {
   include_push((yyvsp[(2) - (2)].string));
 }
     break;
 
   case 41:
-
-/* Line 1821 of yacc.c  */
-#line 442 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 451 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_ILLUMINANT);
@@ -2015,18 +1961,16 @@ yyreduce:
     break;
 
   case 42:
-
-/* Line 1821 of yacc.c  */
-#line 451 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 460 "src/core/pbrtparse.yy"
     {
     pbrtLookAt((yyvsp[(2) - (10)].num), (yyvsp[(3) - (10)].num), (yyvsp[(4) - (10)].num), (yyvsp[(5) - (10)].num), (yyvsp[(6) - (10)].num), (yyvsp[(7) - (10)].num), (yyvsp[(8) - (10)].num), (yyvsp[(9) - (10)].num), (yyvsp[(10) - (10)].num));
 }
     break;
 
   case 43:
-
-/* Line 1821 of yacc.c  */
-#line 457 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 466 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -2036,9 +1980,8 @@ yyreduce:
     break;
 
   case 44:
-
-/* Line 1821 of yacc.c  */
-#line 466 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 475 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -2048,45 +1991,40 @@ yyreduce:
     break;
 
   case 45:
-
-/* Line 1821 of yacc.c  */
-#line 475 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 484 "src/core/pbrtparse.yy"
     {
     pbrtNamedMaterial((yyvsp[(2) - (2)].string));
 }
     break;
 
   case 46:
-
-/* Line 1821 of yacc.c  */
-#line 481 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 490 "src/core/pbrtparse.yy"
     {
     pbrtObjectBegin((yyvsp[(2) - (2)].string));
 }
     break;
 
   case 47:
-
-/* Line 1821 of yacc.c  */
-#line 487 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 496 "src/core/pbrtparse.yy"
     {
     pbrtObjectEnd();
 }
     break;
 
   case 48:
-
-/* Line 1821 of yacc.c  */
-#line 493 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 502 "src/core/pbrtparse.yy"
     {
     pbrtObjectInstance((yyvsp[(2) - (2)].string));
 }
     break;
 
   case 49:
-
-/* Line 1821 of yacc.c  */
-#line 499 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 508 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -2096,9 +2034,8 @@ yyreduce:
     break;
 
   case 50:
-
-/* Line 1821 of yacc.c  */
-#line 508 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 517 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -2108,27 +2045,24 @@ yyreduce:
     break;
 
   case 51:
-
-/* Line 1821 of yacc.c  */
-#line 517 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 526 "src/core/pbrtparse.yy"
     {
     pbrtReverseOrientation();
 }
     break;
 
   case 52:
-
-/* Line 1821 of yacc.c  */
-#line 523 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 532 "src/core/pbrtparse.yy"
     {
     pbrtRotate((yyvsp[(2) - (5)].num), (yyvsp[(3) - (5)].num), (yyvsp[(4) - (5)].num), (yyvsp[(5) - (5)].num));
 }
     break;
 
   case 53:
-
-/* Line 1821 of yacc.c  */
-#line 529 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 538 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -2138,18 +2072,16 @@ yyreduce:
     break;
 
   case 54:
-
-/* Line 1821 of yacc.c  */
-#line 538 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 547 "src/core/pbrtparse.yy"
     {
     pbrtScale((yyvsp[(2) - (4)].num), (yyvsp[(3) - (4)].num), (yyvsp[(4) - (4)].num));
 }
     break;
 
   case 55:
-
-/* Line 1821 of yacc.c  */
-#line 544 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 553 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -2159,9 +2091,8 @@ yyreduce:
     break;
 
   case 56:
-
-/* Line 1821 of yacc.c  */
-#line 553 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 562 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -2171,9 +2102,8 @@ yyreduce:
     break;
 
   case 57:
-
-/* Line 1821 of yacc.c  */
-#line 562 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 571 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -2183,36 +2113,32 @@ yyreduce:
     break;
 
   case 58:
-
-/* Line 1821 of yacc.c  */
-#line 571 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 580 "src/core/pbrtparse.yy"
     {
     pbrtTransformBegin();
 }
     break;
 
   case 59:
-
-/* Line 1821 of yacc.c  */
-#line 577 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 586 "src/core/pbrtparse.yy"
     {
     pbrtTransformEnd();
 }
     break;
 
   case 60:
-
-/* Line 1821 of yacc.c  */
-#line 583 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 592 "src/core/pbrtparse.yy"
     {
     pbrtTransformTimes((yyvsp[(2) - (3)].num), (yyvsp[(3) - (3)].num));
 }
     break;
 
   case 61:
-
-/* Line 1821 of yacc.c  */
-#line 589 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 598 "src/core/pbrtparse.yy"
     {
     if (VerifyArrayLength( (yyvsp[(2) - (2)].ribarray), 16, "Transform" ))
         pbrtTransform( (float *) (yyvsp[(2) - (2)].ribarray)->array );
@@ -2221,18 +2147,16 @@ yyreduce:
     break;
 
   case 62:
-
-/* Line 1821 of yacc.c  */
-#line 597 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 606 "src/core/pbrtparse.yy"
     {
     pbrtTranslate((yyvsp[(2) - (4)].num), (yyvsp[(3) - (4)].num), (yyvsp[(4) - (4)].num));
 }
     break;
 
   case 63:
-
-/* Line 1821 of yacc.c  */
-#line 603 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 612 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -2242,9 +2166,8 @@ yyreduce:
     break;
 
   case 64:
-
-/* Line 1821 of yacc.c  */
-#line 612 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 621 "src/core/pbrtparse.yy"
     {
     ParamSet params;
     InitParamSet(params, SPECTRUM_REFLECTANCE);
@@ -2254,27 +2177,24 @@ yyreduce:
     break;
 
   case 65:
-
-/* Line 1821 of yacc.c  */
-#line 621 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 630 "src/core/pbrtparse.yy"
     {
     pbrtWorldBegin();
 }
     break;
 
   case 66:
-
-/* Line 1821 of yacc.c  */
-#line 627 "core/pbrtparse.yy"
+/* Line 1787 of yacc.c  */
+#line 636 "src/core/pbrtparse.yy"
     {
     pbrtWorldEnd();
 }
     break;
 
 
-
-/* Line 1821 of yacc.c  */
-#line 2278 "core/pbrtparse.cpp"
+/* Line 1787 of yacc.c  */
+#line 2198 "src/core/pbrtparse.cpp"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2437,7 +2357,9 @@ yyerrlab1:
       YY_STACK_PRINT (yyss, yyssp);
     }
 
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
 
 
   /* Shift the error token.  */
@@ -2461,7 +2383,7 @@ yyabortlab:
   yyresult = 1;
   goto yyreturn;
 
-#if !defined(yyoverflow) || YYERROR_VERBOSE
+#if !defined yyoverflow || YYERROR_VERBOSE
 /*-------------------------------------------------.
 | yyexhaustedlab -- memory exhaustion comes here.  |
 `-------------------------------------------------*/
@@ -2503,9 +2425,8 @@ yyreturn:
 }
 
 
-
-/* Line 2067 of yacc.c  */
-#line 632 "core/pbrtparse.yy"
+/* Line 2050 of yacc.c  */
+#line 641 "src/core/pbrtparse.yy"
 
 static const char *paramTypeToName(int type) {
     switch (type) {
@@ -2678,6 +2599,5 @@ static bool lookupType(const char *name, int *type, string &sname) {
     sname = string(strp);
     return true;
 }
-
 
 

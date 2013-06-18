@@ -3,8 +3,8 @@
 .sconsign.dblite
 
 # Build folders:
-src/objs
-src/bin
+objs
+bin
 
 # Common renderer output file:
 pbrt.exr
