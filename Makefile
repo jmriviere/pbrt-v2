@@ -75,6 +75,7 @@ LIB_CXXSRCS  = $(wildcard $(SRC)/core/*.cpp) $(SRC)/core/pbrtlex.cpp $(SRC)/core
 LIB_CXXSRCS += $(wildcard $(SRC)/accelerators/*.cpp $(SRC)/cameras/*.cpp $(SRC)/film/*.cpp $(SRC)/filters/*.cpp )
 LIB_CXXSRCS += $(wildcard $(SRC)/integrators/*.cpp $(SRC)/lights/*.cpp $(SRC)/materials/*.cpp $(SRC)/renderers/*.cpp )
 LIB_CXXSRCS += $(wildcard $(SRC)/samplers/*.cpp $(SRC)/shapes/*.cpp $(SRC)/textures/*.cpp $(SRC)/volumes/*.cpp)
+LIB_CXXSRCS += $(wildcard $(SRC)/core/opencl/*.cpp)
 
 LIBOBJS  = $(addprefix objs/, $(subst /,_,$(subst $(SRC)/,,$(LIB_CSRCS:.c=.o))))
 LIBOBJS += $(addprefix objs/, $(subst /,_,$(subst $(SRC)/,,$(LIB_CXXSRCS:.cpp=.o))))
@@ -119,6 +120,10 @@ objs/core_%.o: $(SRC)/core/%.cpp
 objs/core_%.o: $(SRC)/core/%.c
 	@echo "Building object $@"
 	@$(CC) $(CCFLAGS) -o $@ -c $<
+
+objs/core_opencl_%.o: $(SRC)/core/opencl/%.cpp
+	@echo "Building object $@"
+	@$(CXX) $(CXXFLAGS) -D__CL_ENABLE_EXCEPTIONS -o $@ -c $<
 
 objs/film_%.o: $(SRC)/film/%.cpp
 	@echo "Building object $@"
