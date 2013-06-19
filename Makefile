@@ -69,6 +69,7 @@ SRC=src
 INCLUDE=-I$(SRC) -I$(SRC)/core -I$(SRC)/core/opencl $(EXR_INCLUDES) $(TIFF_INCLUDES)
 WARN=-Wall
 CWD=$(shell pwd)
+DEPS= -MM -MF $@.d
 CXXFLAGS=$(OPT) $(MARCH) $(INCLUDE) $(WARN) $(DEFS)
 CCFLAGS=$(CXXFLAGS)
 LIBS=$(LEXLIB) $(EXR_LIBDIR) $(EXRLIBS) -lm -lOpenCL -llog4cxx
@@ -106,7 +107,7 @@ pbrt: bin/pbrt
 dirs:
 	/bin/mkdir -p bin objs
 
-$(LIBOBJS): $(HEADERS)
+#$(LIBOBJS): $(HEADERS)
 
 .PHONY: dirs tools 
 
@@ -116,74 +117,92 @@ objs/libpbrt.a: $(LIBOBJS)
 
 objs/accelerators_%.o: $(SRC)/accelerators/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/cameras_%.o: $(SRC)/cameras/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/core_%.o: $(SRC)/core/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/core_%.o: $(SRC)/core/%.c
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CC) $(CCFLAGS) -o $@ -c $<
 
-objs/core_opencl_%.o: $(SRC)/core/opencl/%.cpp
+objs/core_opencl_%.o: $(SRC)/core/opencl/%.cpp $(SRC)/core/opencl/host.h
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -D__CL_ENABLE_EXCEPTIONS -o $@ -c $<
 
 objs/film_%.o: $(SRC)/film/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/filters_%.o: $(SRC)/filters/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/integrators_%.o: $(SRC)/integrators/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/lights_%.o: $(SRC)/lights/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/main_%.o: $(SRC)/main/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/materials_%.o: $(SRC)/materials/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/renderers_%.o: $(SRC)/renderers/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/samplers_%.o: $(SRC)/samplers/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/shapes_%.o: $(SRC)/shapes/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/textures_%.o: $(SRC)/textures/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/volumes_%.o: $(SRC)/volumes/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/pbrt.o: $(SRC)/main/pbrt.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 objs/tools_%.o: $(SRC)/tools/%.cpp
 	@echo "Building object $@"
+	$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 bin/pbrt: objs/main_pbrt.o objs/libpbrt.a
@@ -219,3 +238,5 @@ $(RENDERER_BINARY): $(RENDERER_OBJS) $(CORE_LIB)
 
 clean:
 	rm -f objs/* bin/* $(SRC)/core/pbrtlex.[ch]* $(SRC)/core/pbrtparse.[ch]*
+
+-include $(LIBOBJS:.o=.o.d)
