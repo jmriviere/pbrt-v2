@@ -14,21 +14,32 @@
 #include <CL/cl.hpp>
 #endif
 
-#include <boost/log/trivial.hpp>
+#include <string>
+
 #include "util.h"
 #include "pbrt.h"
 
 class Host {
+public:
+	static Host& instance();
 
-	static void init();
+	void buildKernels(std::string path);
+	std::string platforms();
+	std::string device();
+	std::string buildLog();
 
 private:
 	Host();
-	void info(VECTOR_CLASS<cl::Platform>);
+	Host(Host const&);
+	void operator=(Host const&);
+	void check_gpu();
 
 	uint32_t p_index;
+	uint32_t d_index;
 	VECTOR_CLASS<cl::Platform> _platforms;
 	VECTOR_CLASS<cl::Device> _devices;
+	cl::Context* _context;
+	cl::Program* _prog;
 
 };
 

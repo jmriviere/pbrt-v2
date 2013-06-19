@@ -2,6 +2,8 @@
 # user-configurable section
 ###########################################################################
 
+DEBUG=1
+
 # common locations for the OpenEXR libraries; may need to be updated
 # for unusual installation locations
 HAVE_EXR=1
@@ -24,7 +26,8 @@ DEFS=-DPBRT_HAS_OPENEXR
 MARCH=-m64
 
 # change this to -g3 for debug builds
-OPT=-O2
+#OPT=-O2
+OPT=-g3
 # comment out this line to enable assertions at runtime
 DEFS += -DNDEBUG
 
@@ -63,12 +66,16 @@ CC=gcc
 CXX=g++
 LD=$(CXX) $(OPT) $(MARCH)
 SRC=src
-INCLUDE=-I$(SRC) -I$(SRC)/core $(EXR_INCLUDES) $(TIFF_INCLUDES)
+INCLUDE=-I$(SRC) -I$(SRC)/core -I$(SRC)/core/opencl $(EXR_INCLUDES) $(TIFF_INCLUDES)
 WARN=-Wall
 CWD=$(shell pwd)
 CXXFLAGS=$(OPT) $(MARCH) $(INCLUDE) $(WARN) $(DEFS)
 CCFLAGS=$(CXXFLAGS)
-LIBS=$(LEXLIB) $(EXR_LIBDIR) $(EXRLIBS) -lm 
+LIBS=$(LEXLIB) $(EXR_LIBDIR) $(EXRLIBS) -lm -lOpenCL -llog4cxx
+
+ifeq ($(DEBUG), 1)
+	CXXFLAGS += -DDEBUG -g -ggdb
+endif
 
 LIB_CSRCS=$(SRC)/core/targa.c
 LIB_CXXSRCS  = $(wildcard $(SRC)/core/*.cpp) $(SRC)/core/pbrtlex.cpp $(SRC)/core/pbrtparse.cpp
@@ -81,11 +88,14 @@ LIBOBJS  = $(addprefix objs/, $(subst /,_,$(subst $(SRC)/,,$(LIB_CSRCS:.c=.o))))
 LIBOBJS += $(addprefix objs/, $(subst /,_,$(subst $(SRC)/,,$(LIB_CXXSRCS:.cpp=.o))))
 
 HEADERS = $(wildcard $(SRC)/*/*.h)
+HEADERS += $(wildcard $(SRC)/core/opencl/*.h)
 
-TOOLS = bin/bsdftest bin/exravg bin/exrdiff
+TOOLS = bin/bsdftest bin/exravg bin/exrdiff bin/oclcheck
 ifeq ($(HAVE_LIBTIFF),1)
     TOOLS += bin/exrtotiff
 endif
+
+all: default
 
 default: dirs bin/pbrt $(TOOLS)
 
@@ -102,7 +112,6 @@ $(LIBOBJS): $(HEADERS)
 
 objs/libpbrt.a: $(LIBOBJS)
 	@echo "Building the core rendering library (libpbrt.a)"
-	@echo "$(LIBOBJS)"
 	@ar rcs $@ $(LIBOBJS)
 
 objs/accelerators_%.o: $(SRC)/accelerators/%.cpp
