@@ -1,5 +1,6 @@
-__kernel void test(__global int* i) {
 
-	*i = 0;
+__kernel void test(__global int4* i) {
 
+	i[0] = 0;
+	
 }

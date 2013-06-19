@@ -15,6 +15,11 @@ using namespace std;
 
 LoggerPtr logger(Logger::getLogger(__FILE__));
 
+Host::~Host() {
+	delete _context;
+	delete _queue;
+}
+
 Host& Host::instance() {
 	static Host _instance;
 	return _instance;
@@ -50,10 +55,31 @@ void Host::buildKernels(string path) {
 		throw cl::Error(CL_INVALID_VALUE, err.c_str());
 	}
 
-	_prog = new cl::Program(*_context, sources, &error);
-	_prog->build(_devices, NULL, NULL, &error);
+	cl::Program prog(*_context, sources, &error);
+	prog.build(_devices, NULL, NULL, &error);
 
-	LOG(logger, DEBUG, buildLog());
+	prog.createKernels(&_kernels);
+
+	LOG(logger, DEBUG, buildLog(prog));
+}
+
+cl::Kernel Host::retrieveKernel(cl::STRING_CLASS name) {
+
+	string fun;
+
+	for (vector<cl::Kernel>::iterator it = _kernels.begin();
+		 it != _kernels.end(); ++it) {
+
+		it->getInfo(CL_KERNEL_FUNCTION_NAME, &fun);
+		if (!name.compare(fun)) {
+			return *it;
+		}
+
+	}
+
+	string msg = "Unknown kernel name: " + name;
+	throw cl::Error(CL_INVALID_VALUE, msg.c_str());
+
 }
 
 string Host::platforms() {
@@ -106,13 +132,13 @@ string Host::device() {
 
 }
 
-string Host::buildLog() {
+string Host::buildLog(cl::Program prog) {
 	cl::STRING_CLASS options, blog, status;
 	ostringstream info;
 
-	_prog->getBuildInfo(_devices[d_index], CL_PROGRAM_BUILD_OPTIONS, &options);
-	_prog->getBuildInfo(_devices[d_index], CL_PROGRAM_BUILD_LOG, &blog);
-	_prog->getBuildInfo(_devices[d_index], CL_PROGRAM_BUILD_STATUS, &status);
+	prog.getBuildInfo(_devices[d_index], CL_PROGRAM_BUILD_OPTIONS, &options);
+	prog.getBuildInfo(_devices[d_index], CL_PROGRAM_BUILD_LOG, &blog);
+	prog.getBuildInfo(_devices[d_index], CL_PROGRAM_BUILD_STATUS, &status);
 
 	info << "Building kernels" << endl
 		 << "Build Options: " << options << endl
@@ -134,6 +160,7 @@ Host::Host() : p_index(0) {
 		check_gpu();
 		LOG(logger, INFO, device());
 		_context = new cl::Context(_devices);
+		_queue = new cl::CommandQueue(*_context, _devices[d_index], CL_QUEUE_PROFILING_ENABLE);
 	}
 	catch (cl::Error e) {
 		LOG(logger, ERROR, e.what());

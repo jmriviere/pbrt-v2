@@ -21,12 +21,18 @@
 
 class Host {
 public:
+	const cl::CommandQueue *_queue;
+	const cl::Context* _context;
+
+	~Host();
+
 	static Host& instance();
 
 	void buildKernels(std::string path);
+	cl::Kernel retrieveKernel(cl::STRING_CLASS name);
 	std::string platforms();
 	std::string device();
-	std::string buildLog();
+	std::string buildLog(cl::Program prog);
 
 private:
 	Host();
@@ -38,8 +44,7 @@ private:
 	uint32_t d_index;
 	VECTOR_CLASS<cl::Platform> _platforms;
 	VECTOR_CLASS<cl::Device> _devices;
-	cl::Context* _context;
-	cl::Program* _prog;
+	std::vector<cl::Kernel> _kernels;
 
 };
 

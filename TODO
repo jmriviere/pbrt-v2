@@ -1,0 +1,3 @@
+Find an alternative to log (current: boost.Log does not link properly) - DONE == log4cxx
+Get rid of the memory leaks in the code for Host
+Find out why OCL refuses the kernel arg ...
