@@ -21,28 +21,24 @@ int main(int argc, char* argv[]) {
 
     string name;
 
-    int i[4] = {4};
+    int i = 4;
 
     cl::Event e;
 
     std::cout << Host::instance().platforms() << std::endl;
     Host::instance().buildKernels(KERNEL_PATH);
     cl::Kernel k = Host::instance().retrieveKernel("test");
-    cl::Buffer b(*(Host::instance()._context), CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), NULL);
-    k.setArg(0, sizeof(int) * 4, &i);
+    cl::Buffer b(*(Host::instance()._context), CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &i);
+    k.setArg(0, b);
     k.getInfo(CL_KERNEL_NUM_ARGS, &t);
 
     cout << t << endl;
 
     t = Host::instance()._queue->enqueueTask(k, NULL, &e);
 
-    if (t == CL_INVALID_KERNEL_ARGS) {
-    	cout << "prout" << endl;
-    }
-
     e.wait();
     t = Host::instance()._queue->enqueueReadBuffer(b, CL_TRUE, 0, sizeof(int), &i);
-    cout << i[0] << endl;
+    cout << i << endl;
     return 0;
 
 }

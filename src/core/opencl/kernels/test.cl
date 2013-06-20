@@ -1,6 +1,6 @@
 
-__kernel void test(__global int4* i) {
+__kernel void test(__global int* i) {
 
-	i[0] = 0;
+	i[get_global_id(0)] = 150;
 	
 }
