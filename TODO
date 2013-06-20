@@ -3,3 +3,4 @@ Get rid of the memory leaks in the code for Host
 Find out why OCL refuses the kernel arg ... (Must be a bug in the implementation of Intel's framework)
 Get rid of the exceptions ...
 Find out why the kernel will fail compiling sometimes, and never in the debugger (how convenient :/)
+Incorporate unit tests
