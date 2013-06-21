@@ -32,6 +32,8 @@ void Host::buildKernels(string path) {
 	struct dirent *ent;
 	cl::Program::Sources sources;
 
+	char* buf;
+
 	dir = opendir(path.c_str());
 
 	if (NULL != dir) {
@@ -45,7 +47,9 @@ void Host::buildKernels(string path) {
 				f.seekg(0, ios::beg);
 				f.read(&source[0], source.size());
 				f.close();
-				sources.push_back(make_pair(source.c_str(), source.size()));
+				buf = new char[source.size() + 1];
+				strcpy(buf, source.c_str());
+				sources.push_back(make_pair(buf, source.size()));
 			}
 		}
 		closedir(dir);
@@ -56,7 +60,7 @@ void Host::buildKernels(string path) {
 	}
 
 	cl::Program prog(*_context, sources, &error);
-	prog.build(_devices, NULL, NULL, &error);
+	prog.build(_devices, NULL, NULL, NULL);
 
 	prog.createKernels(&_kernels);
 

@@ -66,6 +66,7 @@ CC=gcc
 CXX=g++
 LD=$(CXX) $(OPT) $(MARCH)
 SRC=src
+TEST=$(SRC)/tests
 INCLUDE=-I$(SRC) -I$(SRC)/core -I$(SRC)/core/opencl $(EXR_INCLUDES) $(TIFF_INCLUDES)
 WARN=-Wall
 CWD=$(shell pwd)
@@ -88,8 +89,11 @@ LIB_CXXSRCS += $(wildcard $(SRC)/core/opencl/*.cpp)
 LIBOBJS  = $(addprefix objs/, $(subst /,_,$(subst $(SRC)/,,$(LIB_CSRCS:.c=.o))))
 LIBOBJS += $(addprefix objs/, $(subst /,_,$(subst $(SRC)/,,$(LIB_CXXSRCS:.cpp=.o))))
 
-HEADERS = $(wildcard $(SRC)/*/*.h)
-HEADERS += $(wildcard $(SRC)/core/opencl/*.h)
+TESTS_SRC=$(wildcard $(TEST)/*.cpp)
+TESTS=$(TESTS_SRC:.cpp=.make)
+
+#HEADERS = $(wildcard $(SRC)/*/*.h)
+#HEADERS += $(wildcard $(SRC)/core/opencl/*.h)
 
 TOOLS = bin/bsdftest bin/exravg bin/exrdiff bin/oclcheck
 ifeq ($(HAVE_LIBTIFF),1)
@@ -98,14 +102,14 @@ endif
 
 all: default
 
-default: dirs bin/pbrt $(TOOLS)
+default: dirs bin/pbrt $(TOOLS) gtest
 
 bin/%: dirs
 
 pbrt: bin/pbrt
 
 dirs:
-	/bin/mkdir -p bin objs
+	/bin/mkdir -p bin objs tests
 
 #$(LIBOBJS): $(HEADERS)
 
@@ -237,6 +241,12 @@ endif
 $(RENDERER_BINARY): $(RENDERER_OBJS) $(CORE_LIB)
 
 clean:
-	rm -f objs/* bin/* $(SRC)/core/pbrtlex.[ch]* $(SRC)/core/pbrtparse.[ch]*
+	rm -f objs/* bin/* $(SRC)/core/pbrtlex.[ch]* $(SRC)/core/pbrtparse.[ch]* tests/*
+
+gtest:
+	@echo "Building $@";
+	$(MAKE) -C $(SRC)/3rdparty/gtest-1.6.0
+	@mv $(SRC)/3rdparty/gtest-1.6.0/lib/* tests
 
 -include $(LIBOBJS:.o=.o.d)
+#-include $(TESTS)
