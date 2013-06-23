@@ -1,6 +1,6 @@
 Find an alternative to log (current: boost.Log does not link properly) - DONE == log4cxx
 Get rid of the memory leaks in the code for Host
 Find out why OCL refuses the kernel arg ... (Must be a bug in the implementation of Intel's framework)
-Get rid of the exceptions ...
-Find out why the kernel will fail compiling sometimes, and never in the debugger (how convenient :/)
+Get rid of the exceptions ... (No way to find out what went wrong when a kernel build fils :/)
+Find out why the kernel will fail compiling sometimes, and never in the debugger (how convenient :/) -- DONE
 Incorporate unit tests
