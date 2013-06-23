@@ -93,6 +93,7 @@
 #include "renderers/metropolis.h"
 #include "renderers/samplerrenderer.h"
 #include "renderers/surfacepoints.h"
+#include "renderers/gpurenderer.h"
 #include "samplers/adaptive.h"
 #include "samplers/bestcandidate.h"
 #include "samplers/halton.h"
@@ -1242,6 +1243,10 @@ Renderer *RenderOptions::MakeRenderer() const {
         Point pCamera = camera->CameraToWorld(camera->shutterOpen, Point(0, 0, 0));
         renderer = CreateSurfacePointsRenderer(RendererParams, pCamera, camera->shutterOpen);
         RendererParams.ReportUnused();
+    }
+    else if (RendererName == "gpu") {
+    	Sampler *sampler = MakeSampler(SamplerName, SamplerParams, camera->film, camera);
+    	renderer = new GpuRenderer(sampler, camera, false);
     }
     else {
         if (RendererName != "sampler")

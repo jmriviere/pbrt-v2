@@ -67,7 +67,7 @@ void Host::buildKernels(string path) {
 	LOG(logger, DEBUG, buildLog(prog));
 }
 
-cl::Kernel Host::retrieveKernel(cl::STRING_CLASS name) {
+cl::Kernel Host::retrieveKernel(string name) {
 
 	string fun;
 
@@ -88,7 +88,7 @@ cl::Kernel Host::retrieveKernel(cl::STRING_CLASS name) {
 
 string Host::platforms() {
 
-	cl::STRING_CLASS name, vendor, version, profile, ext;
+	string name, vendor, version, profile, ext;
 	ostringstream info;
 
 	for (VECTOR_CLASS<cl::Platform>::iterator it = _platforms.begin();
@@ -111,7 +111,7 @@ string Host::platforms() {
 }
 
 string Host::device() {
-	cl::STRING_CLASS name, vendor, version, driver, ext;
+	string name, vendor, version, driver, ext;
 	cl_uint nb_units;
 	cl_device_type type;
 	ostringstream info;
@@ -137,7 +137,7 @@ string Host::device() {
 }
 
 string Host::buildLog(cl::Program prog) {
-	cl::STRING_CLASS options, blog, status;
+	string options, blog, status;
 	ostringstream info;
 
 	prog.getBuildInfo(_devices[d_index], CL_PROGRAM_BUILD_OPTIONS, &options);
@@ -156,7 +156,7 @@ string Host::buildLog(cl::Program prog) {
 
 Host::Host() : p_index(0) {
 	// List of the devices available on the default platform
-	VECTOR_CLASS<cl::Device> devices;
+	vector<cl::Device> devices;
 	try {
 		cl::Platform::get(&_platforms);
 		LOG(logger, INFO, platforms());
@@ -175,7 +175,7 @@ Host::Host() : p_index(0) {
 void Host::check_gpu() {
 
 	cl_device_type t;
-	cl::STRING_CLASS ext;
+	string ext;
 
 	if (0 != _devices.size()) {
 		d_index = 0;

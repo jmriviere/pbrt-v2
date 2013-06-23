@@ -10,10 +10,10 @@
 
 #include <log4cxx/logger.h>
 #include <log4cxx/xml/domconfigurator.h>
+#include "log4cxx/basicconfigurator.h"
 
 using namespace log4cxx;
 using namespace log4cxx::xml;
-using namespace log4cxx::helpers;
 
 #define KERNEL_PATH "/home/poupine/Thesis/pbrt-v2/src/core/opencl/kernels"
 

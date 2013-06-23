@@ -15,6 +15,7 @@
 #endif
 
 #include <string>
+#include <vector>
 
 #include "util.h"
 #include "pbrt.h"
@@ -29,7 +30,7 @@ public:
 	static Host& instance();
 
 	void buildKernels(std::string path);
-	cl::Kernel retrieveKernel(cl::STRING_CLASS name);
+	cl::Kernel retrieveKernel(std::string name);
 	std::string platforms();
 	std::string device();
 	std::string buildLog(cl::Program prog);
@@ -42,8 +43,8 @@ private:
 
 	uint32_t p_index;
 	uint32_t d_index;
-	VECTOR_CLASS<cl::Platform> _platforms;
-	VECTOR_CLASS<cl::Device> _devices;
+	std::vector<cl::Platform> _platforms;
+	std::vector<cl::Device> _devices;
 	std::vector<cl::Kernel> _kernels;
 
 };

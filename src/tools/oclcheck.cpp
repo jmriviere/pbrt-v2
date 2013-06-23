@@ -10,7 +10,6 @@
 
 #include "host.h"
 #include "util.h"
-#include "log4cxx/basicconfigurator.h"
 
 using namespace std;
 
@@ -25,7 +24,7 @@ int main(int argc, char* argv[]) {
 
     cl::Event e;
 
-    std::cout << Host::instance().platforms() << std::endl;
+//    std::cout << Host::instance().platforms() << std::endl;
     Host::instance().buildKernels(KERNEL_PATH);
     cl::Kernel k = Host::instance().retrieveKernel("test");
     cl::Buffer b(*(Host::instance()._context), CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &i);
