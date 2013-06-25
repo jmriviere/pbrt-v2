@@ -60,11 +60,16 @@ void Host::buildKernels(string path) {
 	}
 
 	cl::Program prog(*_context, sources, &error);
-	prog.build(_devices, NULL, NULL, NULL);
 
-	prog.createKernels(&_kernels);
+	try {
+		prog.build(_devices, NULL, NULL, NULL);
 
-	LOG(logger, DEBUG, buildLog(prog));
+		prog.createKernels(&_kernels);
+
+	} catch (cl::Error e) {
+		LOG(logger, ERROR, e.what());
+		LOG(logger, DEBUG, buildLog(prog));
+	}
 }
 
 cl::Kernel Host::retrieveKernel(string name) {

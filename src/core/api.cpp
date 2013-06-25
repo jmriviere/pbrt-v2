@@ -283,6 +283,7 @@ static vector<GraphicsState> pushedGraphicsStates;
 static vector<TransformSet> pushedTransforms;
 static vector<uint32_t> pushedActiveTransformBits;
 static TransformCache transformCache;
+static vector<Reference<Shape> > shapes;
 
 // API Macros
 #define VERIFY_INITIALIZED(func) \
@@ -998,6 +999,7 @@ void pbrtShape(const string &name, const ParamSet &params) {
         transformCache.Lookup(curTransform[0], &obj2world, &world2obj);
         Reference<Shape> shape = MakeShape(name, obj2world, world2obj,
             graphicsState.reverseOrientation, params);
+        shapes.push_back(shape);
         if (!shape) return;
         Reference<Material> mtl = graphicsState.CreateMaterial(params);
         params.ReportUnused();
@@ -1246,7 +1248,7 @@ Renderer *RenderOptions::MakeRenderer() const {
     }
     else if (RendererName == "gpu") {
     	Sampler *sampler = MakeSampler(SamplerName, SamplerParams, camera->film, camera);
-    	renderer = new GpuRenderer(sampler, camera, false);
+    	renderer = new GpuRenderer(shapes, sampler, camera, false);
     }
     else {
         if (RendererName != "sampler")

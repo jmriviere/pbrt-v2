@@ -8,6 +8,8 @@
 #ifndef GPURENDERER_H_
 #define GPURENDERER_H_
 
+#include <vector>
+
 #include "pbrt.h"
 #include "renderer.h"
 
@@ -15,7 +17,7 @@
 class GpuRenderer : public Renderer {
 public:
     // SamplerRenderer Public Methods
-    GpuRenderer(Sampler *s, Camera *c, bool visIds);
+    GpuRenderer(std::vector<Reference<Shape> > primitives, Sampler *s, Camera *c, bool visIds);
     ~GpuRenderer();
     void Render(const Scene *scene);
     Spectrum Li(const Scene *scene, const RayDifferential &ray,
@@ -28,6 +30,7 @@ private:
     bool visualizeObjectIds;
     Sampler *sampler;
     Camera *camera;
+    std::vector<Reference<Shape> > primitives;
 };
 
 //GpuRenderer *CreateGpuRenderer(const ParamSet &params, Camera *camera);
