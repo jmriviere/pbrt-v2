@@ -219,9 +219,10 @@ void GpuRenderer::Render(const Scene *scene) {
     for (vector<std::pair<int, Sample*> >::iterator it = aggregate.begin();
     	 it != aggregate.end(); ++it) {
     	for (int i = 0; i < it->first; ++i) {
-    		v[0] = Ls[++j];
-    		v[1] = 0.0;
-    		v[2] = 0.0;
+    		v[0] = Ls[j];
+    		v[1] = Ls[j + 1];
+    		v[2] = Ls[j + 2];
+    		++j;
     		camera->film->AddSample(it->second[i], RGBSpectrum::FromRGB(v));
     	}
     }
