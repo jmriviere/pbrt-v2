@@ -40,7 +40,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
 	int env_w, env_h;
 
-	RGBSpectrum* envmap = ReadImage("/homes/jmr12/Thesis/pbrt-scenes/textures/grace-new_latlong.exr",
+	RGBSpectrum* envmap = ReadImage("/homes/jmr12/Thesis/pbrt-v2/scenes/textures/grace_latlong.exr",
 			&env_w, &env_h);
 
 	float* env = new float[env_w * env_h * 3];
