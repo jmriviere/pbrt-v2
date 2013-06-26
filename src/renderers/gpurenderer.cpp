@@ -17,24 +17,8 @@
 #include "host.h"
 #include "util.h"
 #include "accelerators/bvh.h"
+#include "imageio.h"
 #include <time.h>
-
-#pragma pack(push, 1)
-
-typedef struct s_ray {
-	float origin[3];
-	float dummy;
-	float direction[3];
-	float ultradummy;
-} g_Ray;
-
-typedef struct s_sphere {
-	float center[3];
-	float dummy;
-	float radius;
-} g_Sphere;
-
-#pragma pack(pop)
 
 // SamplerRenderer Method Definitions
 GpuRenderer::GpuRenderer(std::vector<Reference<Shape> > primitives, Sampler *s, Camera *c, bool visIds) : primitives(primitives) {
@@ -54,6 +38,19 @@ void GpuRenderer::Render(const Scene *scene) {
 /*    PBRT_FINISHED_PARSING();
     PBRT_STARTED_RENDERING();*/
 
+	int env_w, env_h;
+
+	RGBSpectrum* envmap = ReadImage("/home/poupine/Thesis/pbrt-scenes/textures/grace-new_latlong.exr",
+			&env_w, &env_h);
+
+	float* env = new float[env_w * env_h * 3];
+
+	for (int i = 0; i < env_w * env_h; ++i) {
+		float rgb[3];
+		envmap[i].ToRGB(rgb);
+		std::memcpy(&env[3 * i], rgb, 3 * sizeof(float));
+	}
+
 	cl_int kepasa;
 
     RNG rng(0);
@@ -65,7 +62,7 @@ void GpuRenderer::Render(const Scene *scene) {
     Sample* samples = origSample->Duplicate(maxSamples);
 
     Ray *rays = new Ray[maxSamples];
-    vector<g_Ray> raysBuf;
+    vector<gpu_Ray> raysBuf;
 
     uint32_t sampleCount;
 
@@ -75,8 +72,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
     std::cout << "Start" << std::endl;
 
-    std::cout << primitives.size();
-
+    //TODO: Give each primitive its own matrix
     const Transform *t = primitives[0]->WorldToObject;
 
     Ray rw;
@@ -87,7 +83,7 @@ void GpuRenderer::Render(const Scene *scene) {
     		float rayWeight = camera->GenerateRay(samples[i], &rays[i]);
     		(*t)(rays[i], &rw);
     		test[i] = samples[i];
-    		g_Ray* r = new g_Ray;
+    		gpu_Ray* r = new gpu_Ray;
     		for (uint32_t j = 0; j < 3; ++j) {
     			r->direction[j] = rw.d[j];
     			r->origin[j] = rw.o[j];
@@ -98,19 +94,35 @@ void GpuRenderer::Render(const Scene *scene) {
     	++p_index;
     }
 
-    g_Sphere sph;
-    sph.center[0] = 0;
-    sph.center[1] = 0;
-    sph.center[2] = 0;
-    sph.radius = 0.5;
+    //TODO: Find a way to build gpu_Sphere from Spheres
 
-    g_Sphere prims[1] = {sph};
+    /*
+    gpu_Sphere* prims = new gpu_Sphere[primitives.size()];
+
+    for (uint32_t i = 0; i < primitives.size(); ++i) {
+    	for (uint32_t j = 0; j < 3; ++j) {
+    		prims[i].center[j] = ((Sphere) primitives[i]).
+    	}
+    }
+
+
+    std::memcpy(prims, &primitives[0], primitives.size() * sizeof(gpu_Sphere));*/
+
+    gpu_Sphere s;
+    s.center[0] = -1.25;
+    s.center[1] = 0;
+    s.center[2] = 0;
+    s.radius = 0.5;
+
+    gpu_Sphere prims[1] = {s};
 
     cl::Event ev;
 
     float *Ls = new float[raysBuf.size()];
 
     Host::instance().buildKernels(KERNEL_PATH);
+
+    std::cout << "Bouyah" << std::endl;
 
     cl::Kernel k = Host::instance().retrieveKernel("ray_cast");
 
@@ -120,25 +132,25 @@ void GpuRenderer::Render(const Scene *scene) {
     	std::cout << "ErrBufLs " << kepasa << std::endl;
     }
 
-    cl::Buffer buf_rays(*(Host::instance())._context, CL_MEM_READ_ONLY, nPixels * sampler->samplesPerPixel * sizeof(g_Ray), NULL, &kepasa);
+    cl::Buffer buf_rays(*(Host::instance())._context, CL_MEM_READ_ONLY, nPixels * sampler->samplesPerPixel * sizeof(gpu_Ray), NULL, &kepasa);
 
     if (CL_SUCCESS != kepasa) {
     	std::cout << "ErrBufR " << kepasa << std::endl;
     }
 
-    cl::Buffer buf_prims(*(Host::instance())._context, CL_MEM_READ_ONLY, sizeof(g_Sphere), NULL, &kepasa);
+    cl::Buffer buf_prims(*(Host::instance())._context, CL_MEM_READ_ONLY, sizeof(gpu_Sphere), NULL, &kepasa);
 
     if (CL_SUCCESS != kepasa) {
     	std::cout << "ErrBuf " << kepasa << std::endl;
     }
 
-    kepasa = Host::instance()._queue->enqueueWriteBuffer(buf_prims, CL_TRUE, 0, sizeof(g_Sphere), &prims[0], NULL, NULL);
+    kepasa = Host::instance()._queue->enqueueWriteBuffer(buf_prims, CL_TRUE, 0, sizeof(gpu_Sphere), &prims[0], NULL, NULL);
 
     if (CL_SUCCESS != kepasa) {
     	std::cout << "ErrWrite " << kepasa << std::endl;
     }
 
-    kepasa = Host::instance()._queue->enqueueWriteBuffer(buf_rays, CL_TRUE, 0, nPixels * sampler->samplesPerPixel * sizeof(g_Ray), &raysBuf[0], NULL, NULL);
+    kepasa = Host::instance()._queue->enqueueWriteBuffer(buf_rays, CL_TRUE, 0, nPixels * sampler->samplesPerPixel * sizeof(gpu_Ray), &raysBuf[0], NULL, NULL);
 
 /*    for (int i = 0; i < raysBuf.size(); i++) {
     	std::cout << "Ray n° " << i << std::endl

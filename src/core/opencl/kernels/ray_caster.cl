@@ -5,9 +5,16 @@
  *      Author: poupine
  */
 
+#define M_PI           3.14159265358979323846
+
+__constant sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE |
+							 CLK_ADDRESS_CLAMP_TO_EDGE |
+							 CLK_FILTER_NEAREST;
+
 #pragma OPENCL EXTENSION cl_amd_printf : enable
 
-typedef struct s_ray {
+
+typedef struct __attribute__ ((packed)) s_ray {
 	float3 origin;
 	float3 direction;
 } Ray;
@@ -17,7 +24,13 @@ typedef struct __attribute__ ((packed)) s_sphere {
 	float radius;
 } Sphere;
 
+typedef float4 Color;
+typedef float3 Normal;
+
+
+
 float ray_sphere_intersection(Ray ray, Sphere sphere) {
+
 	float A = dot(ray.direction, ray.direction);
 	float B = 2 * dot(ray.direction, ray.origin);
 	float C = dot(ray.origin, ray.origin) - sphere.radius * sphere.radius;
@@ -38,32 +51,41 @@ float ray_sphere_intersection(Ray ray, Sphere sphere) {
 	}
 }
 
-kernel void ray_cast(global float* Ls, global Ray* rays, int nb_prim, global Sphere* spheres) {
+void reflection(Ray* ref, Ray r, Normal n) {
+	ref->direction = 2 * dot(r.direction, n) * n - r.direction;
+	ref->origin = n;
+}
 
-/*	Sphere sphere;
-	sphere.center = (float3)(0, 0, 0);
-	sphere.radius = 0.25;*/
+Color map(image2d_t env, Ray ray, float t) {
+	Normal n = normalize(ray.origin + t * ray.direction);
+	Ray ref;
+	reflection(&ref, ray, n);
+	float theta = acos(ref.direction.s1);
+	float phi = atan2(ref.direction.s0, ref.direction.s2);
+	float x = theta/M_PI;
+	float y = (phi + M_PI)/(2 * M_PI);
+	Color c = read_imagef(env, sampler, (float2)(x,y));
+	return c;
+}
+
+__kernel void ray_cast(__read_only image2d_t env, __global float* Ls, __global Ray* rays, int nb_prim, __global Sphere* spheres) {
 
 	int p = get_global_id(0);
-
-	int z = 0;
-
-/*	if (0 == p) {
-		printf("Sphere is as follows: \nRadius = %f \nCenter = {%f, %f, %f}\n", spheres[0].radius,
-				spheres[0].center.s0, spheres[0].center.s1, spheres[0].center.s2);
-	}*/
-
-/*	printf("Ray n° %d\n Direction = {%f, %f, %f}\n Origin = {%f, %f, %f}\n", p,
-			rays[p].direction.s0, rays[p].direction.s1, rays[p].direction.s2,
-			rays[p].origin.s0, rays[p].origin.s1, rays[p].origin.s2);*/
+	float t;
 
 	//for (int i = 0; i < nb_prim; ++i) {
 		//printf("%f\n", ray_sphere_intersection(rays[p], spheres[0]));
-		if (ray_sphere_intersection(rays[p], spheres[0]) != -1) {
-			Ls[p] = 1.0;
+		t = ray_sphere_intersection(rays[p], spheres[0]);
+		if (t != -1) {
+			Color c = map(env, rays[p], t);
+			Ls[p] = c.s0;
+			Ls[p] = c.s1;
+			Ls[p] = c.s2;
+			//Ls[p] = 1.0;
 		}
 		else {
-			Ls[p] = 0.0;
+			for (int i = 0; i < 3; ++i)
+				Ls[p + i] = 0;
 		}
 	//}
 

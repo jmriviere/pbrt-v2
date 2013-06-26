@@ -13,6 +13,28 @@
 #include "pbrt.h"
 #include "renderer.h"
 
+/*
+ * These structures hold data about rays and spheres to be passed to the GPU.
+ * The dummy fields are present to account for memory alignment on the GPU.
+ * */
+
+#pragma pack(push, 1)
+
+typedef struct s_ray {
+	float origin[3];
+	float dummy;
+	float direction[3];
+	float dummy2;
+} gpu_Ray;
+
+typedef struct s_sphere {
+	float center[3];
+	float dummy;
+	float radius;
+} gpu_Sphere;
+
+#pragma pack(pop)
+
 // SamplerRenderer Declarations
 class GpuRenderer : public Renderer {
 public:

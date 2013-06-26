@@ -1,6 +1,15 @@
 Find an alternative to log (current: boost.Log does not link properly) - DONE == log4cxx
-Get rid of the memory leaks in the code for Host
+Get rid of the memory leaks in the code for Host -- PARTLY DONE
 Find out why OCL refuses the kernel arg ... (Must be a bug in the implementation of Intel's framework)
-Get rid of the exceptions ... (No way to find out what went wrong when a kernel build fils :/)
+Get rid of the exceptions ... (No way to find out what went wrong when a kernel build fails :/) -- IGNORE
 Find out why the kernel will fail compiling sometimes, and never in the debugger (how convenient :/) -- DONE
 Incorporate unit tests
+
+Clean up code.
+Free memory
+
+-- Raycaster:
+Computer RGB values
+Get material properties
+Trace secondary rays
+Get info on the envmap
