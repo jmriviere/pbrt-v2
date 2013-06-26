@@ -40,7 +40,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
 	int env_w, env_h;
 
-	RGBSpectrum* envmap = ReadImage("/home/poupine/Thesis/pbrt-scenes/textures/grace-new_latlong.exr",
+	RGBSpectrum* envmap = ReadImage("/homes/jmr12/Thesis/pbrt-scenes/textures/grace-new_latlong.exr",
 			&env_w, &env_h);
 
 	float* env = new float[env_w * env_h * 3];
@@ -120,9 +120,9 @@ void GpuRenderer::Render(const Scene *scene) {
 
     float *Ls = new float[raysBuf.size()];
 
-    Host::instance().buildKernels(KERNEL_PATH);
+    std::cout << env_w << " " << env_h << std::endl;
 
-    std::cout << "Bouyah" << std::endl;
+    Host::instance().buildKernels(KERNEL_PATH);
 
     cl::Kernel k = Host::instance().retrieveKernel("ray_cast");
 
