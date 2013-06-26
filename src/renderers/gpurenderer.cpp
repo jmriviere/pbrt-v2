@@ -126,6 +126,29 @@ void GpuRenderer::Render(const Scene *scene) {
 
     cl::Kernel k = Host::instance().retrieveKernel("ray_cast");
 
+    cl::Image2D envgpu(*(Host::instance()._context), CL_MEM_READ_ONLY, cl::ImageFormat(CL_RGB, CL_FLOAT),
+    				   env_w, env_h, 0, env, &kepasa);
+
+    if (CL_SUCCESS != kepasa) {
+    	std::cout << "ErrIm " << kepasa << std::endl;
+    }
+
+    cl::size_t<3> origin;
+    origin[0] = 0;
+    origin[1] = 0;
+    origin[2] = 0;
+
+    cl::size_t<3> region;
+    region[0] = env_w;
+    region[1] = env_h;
+    region[2] = 1;
+
+    kepasa = Host::instance()._queue->enqueueWriteImage(envgpu, CL_TRUE, origin, region, 0, 0, env, NULL, NULL);
+
+    if (CL_SUCCESS != kepasa) {
+    	std::cout << "ErrImW " << kepasa << std::endl;
+    }
+
     cl::Buffer bufLs(*(Host::instance())._context, CL_MEM_WRITE_ONLY, raysBuf.size() * sizeof(float), NULL, &kepasa);
 
     if (CL_SUCCESS != kepasa) {
