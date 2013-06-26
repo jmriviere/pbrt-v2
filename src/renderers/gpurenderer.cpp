@@ -126,7 +126,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
     cl::Kernel k = Host::instance().retrieveKernel("ray_cast");
 
-    cl::Image2D envgpu(*(Host::instance()._context), CL_MEM_READ_ONLY, cl::ImageFormat(CL_RGB, CL_FLOAT),
+    cl::Image2D envgpu(*(Host::instance()._context), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, cl::ImageFormat(CL_LUMINANCE, CL_FLOAT),
     				   env_w, env_h, 0, env, &kepasa);
 
     if (CL_SUCCESS != kepasa) {
@@ -186,10 +186,11 @@ void GpuRenderer::Render(const Scene *scene) {
     }
 
 
-    k.setArg(0, bufLs);
-    k.setArg(1, buf_rays);
-    k.setArg(2, 1);
-    k.setArg(3, buf_prims);
+    k.setArg(0, envgpu);
+    k.setArg(1, bufLs);
+    k.setArg(2, buf_rays);
+    k.setArg(3, 1);
+    k.setArg(4, buf_prims);
 
 
     kepasa = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange, cl::NDRange(raysBuf.size()),

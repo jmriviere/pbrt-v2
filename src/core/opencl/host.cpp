@@ -62,9 +62,11 @@ void Host::buildKernels(string path) {
 	cl::Program prog(*_context, sources, &error);
 
 	try {
+		LOG(logger, DEBUG, "Compilation Started");
 		prog.build(_devices, NULL, NULL, NULL);
 
 		prog.createKernels(&_kernels);
+		LOG(logger, DEBUG, "Compilation Finished");
 
 	} catch (cl::Error e) {
 		LOG(logger, ERROR, e.what());
