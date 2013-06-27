@@ -8,8 +8,8 @@
 #define M_PI           3.14159265358979323846
 
 __constant sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE |
-							 CLK_ADDRESS_CLAMP_TO_EDGE |
-							 CLK_FILTER_NEAREST;
+			       CLK_ADDRESS_CLAMP_TO_EDGE |
+			       CLK_FILTER_LINEAR;
 
 #pragma OPENCL EXTENSION cl_amd_printf : enable
 
@@ -62,31 +62,30 @@ Color map(image2d_t env, Ray ray, float t) {
 	reflection(&ref, ray, n);
 	float theta = acos(ref.direction.s1);
 	float phi = atan2(ref.direction.s0, ref.direction.s2);
-	float x = theta/M_PI;
-	float y = (phi + M_PI)/(2 * M_PI);
+	float x = (phi + M_PI)/(2 * M_PI);
+	float y = theta/M_PI;
 	Color c = read_imagef(env, sampler, (float2)(x,y));
 	return c;
 }
 
-__kernel void ray_cast(__read_only image2d_t env, __global float* Ls, __global Ray* rays, int nb_prim, __global Sphere* spheres) {
+__kernel void ray_cast(__read_only image2d_t env, __global float4* Ls, __global Ray* rays, int nb_prim, __global Sphere* spheres) {
 
 	int p = get_global_id(0);
 	float t;
-
 	//for (int i = 0; i < nb_prim; ++i) {
 		//printf("%f\n", ray_sphere_intersection(rays[p], spheres[0]));
 		t = ray_sphere_intersection(rays[p], spheres[0]);
 		if (t != -1) {
 			Color c = map(env, rays[p], t);
-			Ls[p] = c.s0;
-			Ls[p] = c.s1;
-			Ls[p] = c.s2;
-			//Ls[p] = 1.0;
+			Ls[p] = c;
 		}
 		else {
-			for (int i = 0; i < 3; ++i)
-				Ls[p + i] = 0;
+		     float theta = acos(rays[p].direction.s1);
+		     float phi = atan2(rays[p].direction.s0, rays[p].direction.s2);
+		     float x = (phi + M_PI)/(2 * M_PI);
+		     float y = theta/M_PI;
+		     Color c = read_imagef(env, sampler, (float2)(x,y));
+		     Ls[p] = c;
 		}
 	//}
-
 }

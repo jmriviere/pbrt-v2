@@ -43,12 +43,14 @@ void GpuRenderer::Render(const Scene *scene) {
 	RGBSpectrum* envmap = ReadImage("/homes/jmr12/Thesis/pbrt-v2/scenes/textures/grace_latlong.exr",
 			&env_w, &env_h);
 
-	float* env = new float[env_w * env_h * 3];
+	float* env = new float[env_w * env_h * 4];
 
 	for (int i = 0; i < env_w * env_h; ++i) {
-		float rgb[3];
+		float rgb[4];
 		envmap[i].ToRGB(rgb);
-		std::memcpy(&env[3 * i], rgb, 3 * sizeof(float));
+		rgb[3] = 1.0;
+		//		std::cout << rgb[0] << " " << rgb[1]<< " " << rgb[2] << std::endl;
+		std::memcpy(&env[4 * i], rgb, 4 * sizeof(float));
 	}
 
 	cl_int kepasa;
@@ -118,7 +120,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
     cl::Event ev;
 
-    float *Ls = new float[raysBuf.size()];
+    float *Ls = new float[4 * raysBuf.size()];
 
     std::cout << env_w << " " << env_h << std::endl;
 
@@ -126,7 +128,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
     cl::Kernel k = Host::instance().retrieveKernel("ray_cast");
 
-    cl::Image2D envgpu(*(Host::instance()._context), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, cl::ImageFormat(CL_LUMINANCE, CL_FLOAT),
+    cl::Image2D envgpu(*(Host::instance()._context), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, cl::ImageFormat(CL_RGBA, CL_FLOAT),
     				   env_w, env_h, 0, env, &kepasa);
 
     if (CL_SUCCESS != kepasa) {
@@ -149,7 +151,7 @@ void GpuRenderer::Render(const Scene *scene) {
     	std::cout << "ErrImW " << kepasa << std::endl;
     }
 
-    cl::Buffer bufLs(*(Host::instance())._context, CL_MEM_WRITE_ONLY, raysBuf.size() * sizeof(float), NULL, &kepasa);
+    cl::Buffer bufLs(*(Host::instance())._context, CL_MEM_WRITE_ONLY, 4 * raysBuf.size() * sizeof(float), NULL, &kepasa);
 
     if (CL_SUCCESS != kepasa) {
     	std::cout << "ErrBufLs " << kepasa << std::endl;
@@ -202,7 +204,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
     ev.wait();
 
-    kepasa = Host::instance()._queue->enqueueReadBuffer(bufLs, CL_TRUE, 0, raysBuf.size() * sizeof(float), Ls, NULL, NULL);
+    kepasa = Host::instance()._queue->enqueueReadBuffer(bufLs, CL_TRUE, 0, 4 * raysBuf.size() * sizeof(float), Ls, NULL, NULL);
 
     if (CL_SUCCESS != kepasa) {
     	std::cout << "ErrRead " << kepasa << std::endl;
@@ -222,8 +224,9 @@ void GpuRenderer::Render(const Scene *scene) {
     		v[0] = Ls[j];
     		v[1] = Ls[j + 1];
     		v[2] = Ls[j + 2];
-    		++j;
-    		camera->film->AddSample(it->second[i], RGBSpectrum::FromRGB(v));
+		//		std::cout << Ls[j] << " " << Ls[j+1] << " " << Ls[j+2] << std::endl;
+    		j += 4;
+    		camera->film->AddSample(it->second[i], Spectrum::FromRGB(v));
     	}
     }
     //camera->film->UpdateDisplay(sampler->xPixelStart,
