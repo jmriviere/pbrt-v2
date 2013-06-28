@@ -63,7 +63,8 @@ void Host::buildKernels(string path) {
 
 	try {
 		LOG(logger, DEBUG, "Compilation Started");
-		prog.build(_devices, NULL, NULL, NULL);
+		std::string options("-I" + std::string(KERNEL_PATH));
+		prog.build(_devices, options.c_str(), NULL, NULL);
 
 		prog.createKernels(&_kernels);
 		LOG(logger, DEBUG, "Compilation Finished");

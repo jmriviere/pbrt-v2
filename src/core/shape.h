@@ -37,11 +37,17 @@
 #define PBRT_CORE_SHAPE_H
 
 // core/shape.h*
+#include <cstring>
 #include "pbrt.h"
 #include "geometry.h"
 #include "transform.h"
 #include "diffgeom.h"
 #include "memory.h"
+
+typedef struct s_Shape {
+	float o2w[16];
+	float w2o[16];
+} GPUShape;
 
 // Shape Declarations
 class Shape : public ReferenceCounted {
@@ -74,6 +80,9 @@ public:
         return Sample(u1, u2, Ns);
     }
     virtual float Pdf(const Point &p, const Vector &wi) const;
+
+    // Convert a shape to a struct to be copied to GPU.
+    virtual size_t toGPU(void* shape) const = 0;
 
     // Shape Public Data
     const Transform *ObjectToWorld, *WorldToObject;

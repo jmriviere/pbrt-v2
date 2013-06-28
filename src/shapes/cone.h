@@ -50,6 +50,8 @@ public:
                    DifferentialGeometry *dg) const;
     bool IntersectP(const Ray &ray) const;
     float Area() const;
+
+    size_t toGPU(void* shape) const;
 protected:
     // Cone Private Data
     float radius, height, phiMax;

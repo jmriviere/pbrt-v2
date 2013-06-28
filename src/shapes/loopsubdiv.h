@@ -53,6 +53,8 @@ public:
     void Refine(vector<Reference<Shape> > &refined) const;
     BBox ObjectBound() const;
     BBox WorldBound() const;
+
+    size_t toGPU(void *shape) const;
 private:
     // LoopSubdiv Private Methods
     static float beta(int valence) {

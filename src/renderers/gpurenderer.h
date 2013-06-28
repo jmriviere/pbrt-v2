@@ -12,6 +12,7 @@
 
 #include "pbrt.h"
 #include "renderer.h"
+#include "shapes/sphere.h"
 
 /*
  * These structures hold data about rays and spheres to be passed to the GPU.
@@ -26,12 +27,6 @@ typedef struct s_ray {
 	float direction[3];
 	float dummy2;
 } gpu_Ray;
-
-typedef struct s_sphere {
-	float center[3];
-	float dummy;
-	float radius;
-} gpu_Sphere;
 
 #pragma pack(pop)
 
@@ -52,8 +47,11 @@ private:
     bool visualizeObjectIds;
     Sampler *sampler;
     Camera *camera;
-    std::vector<Reference<Shape> > primitives;
+    std::vector<GPUSphere> primitives;
 };
+
+static std::vector<gpu_Ray> generateGpuRays(Sampler* sampler, const Scene* scene,
+									   const Camera* camera, std::vector<std::pair<size_t, Sample*> >& samples);
 
 //GpuRenderer *CreateGpuRenderer(const ParamSet &params, Camera *camera);
 

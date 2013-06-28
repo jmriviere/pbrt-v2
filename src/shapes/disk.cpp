@@ -156,4 +156,9 @@ Point Disk::Sample(float u1, float u2, Normal *Ns) const {
     return (*ObjectToWorld)(p);
 }
 
+size_t Disk::toGPU(void* shape) const {
+	Severe("Disk not implemented for GPU");
+	return 0;
+}
+
 

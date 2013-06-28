@@ -111,6 +111,10 @@ void Heightfield::Refine(vector<Reference<Shape> > &refined) const {
     delete[] verts;
 }
 
+size_t Heightfield::toGPU(void * shape) const {
+	Severe("Heightfield not implemented for GPU");
+	return 0;
+}
 
 Heightfield *CreateHeightfieldShape(const Transform *o2w, const Transform *w2o,
         bool reverseOrientation, const ParamSet &params) {

@@ -56,6 +56,8 @@ public:
     BBox WorldBound() const;
     bool CanIntersect() const { return false; }
     void Refine(vector<Reference<Shape> > &refined) const;
+
+    size_t toGPU(void *shape) const;
 private:
     // NURBS Data
     int nu, uorder, nv, vorder;

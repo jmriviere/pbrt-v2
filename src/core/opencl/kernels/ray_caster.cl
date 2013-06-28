@@ -5,31 +5,27 @@
  *      Author: poupine
  */
 
-#define M_PI           3.14159265358979323846
+#include "GPU.h"
 
-__constant sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE |
-			       CLK_ADDRESS_CLAMP_TO_EDGE |
-			       CLK_FILTER_LINEAR;
+Ray transform(Ray r, Transformation t) {
+	float4 homogeneous = (float4)(r.origin, 1) ;
 
-#pragma OPENCL EXTENSION cl_amd_printf : enable
+	Ray ret;
+	ret.direction = r.direction;
 
+	homogeneous.s3 = dot(t.m[3], homogeneous);
+	ret.origin.s0 = dot(t.m[0], homogeneous)/homogeneous.s3;
+	ret.origin.s1 = dot(t.m[1], homogeneous)/homogeneous.s3;
+	ret.origin.s2 = dot(t.m[2], homogeneous)/homogeneous.s3;
 
-typedef struct __attribute__ ((packed)) s_ray {
-	float3 origin;
-	float3 direction;
-} Ray;
+	return ret;
+}
 
-typedef struct __attribute__ ((packed)) s_sphere {
-	float3 center;
-	float radius;
-} Sphere;
+Hit ray_sphere_intersection(Ray ray, Sphere sphere) {
 
-typedef float4 Color;
-typedef float3 Normal;
+	Hit h;
 
-
-
-float ray_sphere_intersection(Ray ray, Sphere sphere) {
+	ray = transform(ray, sphere.w2o);
 
 	float A = dot(ray.direction, ray.direction);
 	float B = 2 * dot(ray.direction, ray.origin);
@@ -40,28 +36,32 @@ float ray_sphere_intersection(Ray ray, Sphere sphere) {
 	float delta = B*B - 4*A*C;
 
 	if (delta < 0) {
-		return -1;
+		h.ray = ray;
+		h.t = -1;
 	}
 	else {
 		float sqrt_d = sqrt(delta);
 		float t1 = (-B - sqrt_d) * inv2A;
 		float t2 = (-B + sqrt_d) * inv2A;
 
-		return (t1 > t2 ? t1 : t2);
+		h.ray = ray;
+		h.t =  (t1 > t2 ? t1 : t2);
 	}
+	
+	return h;
 }
 
-void reflection(Ray* ref, Ray r, Normal n) {
-	ref->direction = 2 * dot(r.direction, n) * n - r.direction;
-	ref->origin = n;
-}
-
-Color map(image2d_t env, Ray ray, float t) {
-	Normal n = normalize(ray.origin + t * ray.direction);
+Ray reflection(Hit h) {
+	Normal n = normalize(h.ray.origin + h.t * h.ray.direction);
 	Ray ref;
-	reflection(&ref, ray, n);
-	float theta = acos(ref.direction.s1);
-	float phi = atan2(ref.direction.s0, ref.direction.s2);
+	ref.direction = 2 * dot(h.ray.direction, n) * n - h.ray.direction;
+	ref.origin = n;
+	return ref;
+}
+
+Color lookup(image2d_t env, Ray ray) {
+	float theta = acos(ray.direction.s1);
+	float phi = atan2(ray.direction.s0, ray.direction.s2);
 	float x = (phi + M_PI)/(2 * M_PI);
 	float y = theta/M_PI;
 	Color c = read_imagef(env, sampler, (float2)(x,y));
@@ -71,21 +71,20 @@ Color map(image2d_t env, Ray ray, float t) {
 __kernel void ray_cast(__read_only image2d_t env, __global float4* Ls, __global Ray* rays, int nb_prim, __global Sphere* spheres) {
 
 	int p = get_global_id(0);
-	float t;
-	//for (int i = 0; i < nb_prim; ++i) {
-		//printf("%f\n", ray_sphere_intersection(rays[p], spheres[0]));
-		t = ray_sphere_intersection(rays[p], spheres[0]);
-		if (t != -1) {
-			Color c = map(env, rays[p], t);
+	Hit hit;
+	for (int i = 0; i < nb_prim; ++i) {
+		if (0 == p) {
+			printf("Lololol %d\n", sizeof(Sphere));
+			printf("Radius: %f", spheres[i].radius);
+		}
+		hit = ray_sphere_intersection(rays[p], spheres[i]);
+		if (hit.t != -1) {
+			Color c = lookup(env, reflection(hit));
 			Ls[p] = c;
 		}
 		else {
-		     float theta = acos(rays[p].direction.s1);
-		     float phi = atan2(rays[p].direction.s0, rays[p].direction.s2);
-		     float x = (phi + M_PI)/(2 * M_PI);
-		     float y = theta/M_PI;
-		     Color c = read_imagef(env, sampler, (float2)(x,y));
+		     Color c = lookup(env, rays[p]);
 		     Ls[p] = c;
 		}
-	//}
+	}
 }
