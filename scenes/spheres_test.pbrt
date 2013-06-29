@@ -14,7 +14,7 @@ WorldBegin
 AttributeBegin
 #Rotate -90 1 0 0
 #LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
-LightSource "infinite" "string mapname" ["/home/poupine/Graphics/CO417-HW1/GraceCathedral/grace_latlong.pfm"]
+LightSource "infinite" "string mapname" ["textures/grace_latlong.pfm"]
         "integer nsamples" [8]
 AttributeEnd
 
