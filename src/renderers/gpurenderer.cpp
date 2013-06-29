@@ -27,10 +27,10 @@ GpuRenderer::GpuRenderer(std::vector<Reference<Shape> > primitives, Sampler *s, 
     camera = c;
     visualizeObjectIds = visIds;
     GPUSphere* shape;
+
     for (std::vector<Reference<Shape> >::iterator it = primitives.begin();
     	 it != primitives.end(); ++it) {
     	size_t c = (*it)->toGPU(NULL);
-    	std::cout << c << std::endl;
     	shape = (GPUSphere*)malloc(c);
     	c = (*it)->toGPU(shape);
     	this->primitives.push_back(*shape);
@@ -55,11 +55,11 @@ void GpuRenderer::Render(const Scene *scene) {
 
 	float* env = new float[env_w * env_h * 4];
 
-	for (int i = 0; i < env_w * env_h; ++i) {
+	for (int i = env_w * env_h; i > 0 ; --i) {
 		float rgb[4];
 		envmap[i].ToRGB(rgb);
 		rgb[3] = 1.0;
-		std::memcpy(&env[4 * i], rgb, 4 * sizeof(float));
+		std::memcpy(&env[4 * (env_w * env_h - i)], rgb, 4 * sizeof(float));
 	}
 
 	std::vector<std::pair<size_t, Sample*> > samples;

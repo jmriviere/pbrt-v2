@@ -18,7 +18,7 @@ LightSource "infinite" "string mapname" ["textures/skylight-day.exr"]
 AttributeEnd
 
 AttributeBegin
-Translate -1.25 0 0
+#Translate -1.25 0 0
 #Rotate 40 1 1 0
 Shape "sphere" "float radius" [.5]
 

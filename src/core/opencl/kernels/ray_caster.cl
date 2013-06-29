@@ -7,16 +7,15 @@
 
 #include "GPU.h"
 
-Ray transform(Ray r, Transformation t) {
-	float4 homogeneous = (float4)(r.origin, 1) ;
+float3 transform(float3 r, Transformation t) {
+	float4 homogeneous = (float4)(r, 1) ;
 
-	Ray ret;
-	ret.direction = r.direction;
+	float3 ret;
 
 	homogeneous.s3 = dot(t.m[3], homogeneous);
-	ret.origin.s0 = dot(t.m[0], homogeneous)/homogeneous.s3;
-	ret.origin.s1 = dot(t.m[1], homogeneous)/homogeneous.s3;
-	ret.origin.s2 = dot(t.m[2], homogeneous)/homogeneous.s3;
+	ret.s0 = dot(t.m[0], homogeneous)/homogeneous.s3;
+	ret.s1 = dot(t.m[1], homogeneous)/homogeneous.s3;
+	ret.s2 = dot(t.m[2], homogeneous)/homogeneous.s3;
 
 	return ret;
 }
@@ -25,7 +24,10 @@ Hit ray_sphere_intersection(Ray ray, Sphere sphere) {
 
 	Hit h;
 
-	ray = transform(ray, sphere.w2o);
+	Ray rhit;
+
+	rhit.origin = transform(ray.origin, sphere.w2o);
+	rhit.direction = ray.direction;
 
 	float A = dot(ray.direction, ray.direction);
 	float B = 2 * dot(ray.direction, ray.origin);
@@ -35,8 +37,9 @@ Hit ray_sphere_intersection(Ray ray, Sphere sphere) {
 
 	float delta = B*B - 4*A*C;
 
+	h.ray = rhit;
+
 	if (delta < 0) {
-		h.ray = ray;
 		h.t = -1;
 	}
 	else {
@@ -44,7 +47,6 @@ Hit ray_sphere_intersection(Ray ray, Sphere sphere) {
 		float t1 = (-B - sqrt_d) * inv2A;
 		float t2 = (-B + sqrt_d) * inv2A;
 
-		h.ray = ray;
 		h.t =  (t1 > t2 ? t1 : t2);
 	}
 	
@@ -52,7 +54,7 @@ Hit ray_sphere_intersection(Ray ray, Sphere sphere) {
 }
 
 Ray reflection(Hit h) {
-	Normal n = normalize(h.ray.origin + h.t * h.ray.direction);
+	float3 n = normalize(h.ray.origin + h.t * h.ray.direction);
 	Ray ref;
 	ref.direction = 2 * dot(h.ray.direction, n) * n - h.ray.direction;
 	ref.origin = n;
@@ -60,9 +62,10 @@ Ray reflection(Hit h) {
 }
 
 Color lookup(image2d_t env, Ray ray) {
-	float theta = acos(ray.direction.s1);
-	float phi = atan2(ray.direction.s0, ray.direction.s2);
-	float x = (phi + M_PI)/(2 * M_PI);
+	float3 dir = normalize(transform(ray.direction, w2l));
+	float theta = acos(dir.s2);
+	float phi = atan2(dir.s1, dir.s0);
+	float x = (phi < 0 ? phi + 2 * M_PI : phi)/(2 * M_PI); //(phi + M_PI)/(2 * M_PI);
 	float y = theta/M_PI;
 	Color c = read_imagef(env, sampler, (float2)(x,y));
 	return c;
@@ -85,6 +88,11 @@ __kernel void ray_cast(__read_only image2d_t env, __global float4* Ls, __global 
 		else {
 		     Color c = lookup(env, rays[p]);
 		     Ls[p] = c;
+		}
+	}
+	if(p == 0) {
+		for(int i =0; i < 4; ++i){
+			printf("\n%f,%f,%f,%f\n", w2l.m[i].s0,w2l.m[i].s1,w2l.m[i].s2,w2l.m[i].s3);
 		}
 	}
 }
