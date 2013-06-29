@@ -48,6 +48,8 @@ public:
     bool CanIntersect() const;
     void Refine(vector<Reference<Shape> > &refined) const;
     BBox ObjectBound() const;
+
+    size_t toGPU(void* shape) const;
 private:
     // Heightfield Private Data
     float *z;

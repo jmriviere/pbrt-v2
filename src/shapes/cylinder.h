@@ -51,6 +51,8 @@ public:
     bool IntersectP(const Ray &ray) const;
     float Area() const;
     Point Sample(float u1, float u2, Normal *Ns) const;
+
+    size_t toGPU(void* shape) const;
 protected:
     // Cylinder Private Data
     float radius, zmin, zmax, phiMax;

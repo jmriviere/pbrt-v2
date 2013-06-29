@@ -206,6 +206,11 @@ float Cone::Area() const {
         phiMax / 2.f;
 }
 
+size_t Cone::toGPU(void* shape) const {
+	Severe("Cone not implemented for GPU");
+	return 0;
+}
+
 
 Cone *CreateConeShape(const Transform *o2w, const Transform *w2o,
         bool reverseOrientation, const ParamSet &params) {

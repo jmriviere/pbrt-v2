@@ -491,6 +491,10 @@ Point LoopSubdiv::weightBoundary(SDVertex *vert, float beta) {
     return P;
 }
 
+size_t LoopSubdiv::toGPU(void* shape) const {
+	Severe("Loops not implemented for GPU");
+}
+
 
 LoopSubdiv *CreateLoopSubdivShape(const Transform *o2w, const Transform *w2o,
         bool reverseOrientation, const ParamSet &params) {

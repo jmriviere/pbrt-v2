@@ -367,6 +367,10 @@ void Triangle::GetShadingGeometry(const Transform &obj2world,
     dgShading->dpdx = dg.dpdx;  dgShading->dpdy = dg.dpdy;
 }
 
+size_t TriangleMesh::toGPU(void *shape) const {
+	Severe("Triangles not implemented for GPU");
+	return 0;
+}
 
 TriangleMesh *CreateTriangleMeshShape(const Transform *o2w, const Transform *w2o,
         bool reverseOrientation, const ParamSet &params,
@@ -455,4 +459,7 @@ Point Triangle::Sample(float u1, float u2, Normal *Ns) const {
     return p;
 }
 
-
+size_t Triangle::toGPU(void *shape) const {
+	Severe("Triangles not implemented for GPU");
+	return 0;
+}

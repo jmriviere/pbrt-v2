@@ -56,6 +56,8 @@ public:
     void Refine(vector<Reference<Shape> > &refined) const;
     friend class Triangle;
     template <typename T> friend class VertexTexture;
+
+    size_t toGPU(void *shape) const;
 protected:
     // TriangleMesh Protected Data
     int ntris, nverts;
@@ -103,6 +105,8 @@ public:
             const DifferentialGeometry &dg,
             DifferentialGeometry *dgShading) const;
     Point Sample(float u1, float u2, Normal *Ns) const;
+
+    size_t toGPU(void *shape) const;
 private:
     // Triangle Private Data
     Reference<TriangleMesh> mesh;

@@ -64,6 +64,7 @@ InfiniteAreaLight::~InfiniteAreaLight() {
     delete radianceMap;
 }
 
+#include <iostream>
 
 InfiniteAreaLight::InfiniteAreaLight(const Transform &light2world,
         const Spectrum &L, int ns, const string &texmap)
@@ -71,6 +72,7 @@ InfiniteAreaLight::InfiniteAreaLight(const Transform &light2world,
     int width = 0, height = 0;
     RGBSpectrum *texels = NULL;
     // Read texel data from _texmap_ into _texels_
+
     if (texmap != "") {
         texels = ReadImage(texmap, &width, &height);
         if (texels)
@@ -102,6 +104,21 @@ InfiniteAreaLight::InfiniteAreaLight(const Transform &light2world,
     // Compute sampling distributions for rows and columns of image
     distribution = new Distribution2D(img, width, height);
     delete[] img;
+
+    for(int i = 0; i < 4; ++i) {
+    	for (int j =0; j < 4; ++j) {
+    		std::cout << LightToWorld.GetMatrix().m[i][j] << " ";
+    	}
+    	std::cout << std::endl;
+    }
+    std::cout << "\n\n";
+
+    for(int i = 0; i < 4; ++i) {
+    	for (int j =0; j < 4; ++j) {
+    		std::cout << WorldToLight.GetMatrix().m[i][j] << " ";
+    	}
+    	std::cout << std::endl;
+    }
 }
 
 

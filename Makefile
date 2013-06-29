@@ -67,7 +67,7 @@ CXX=g++
 LD=$(CXX) $(OPT) $(MARCH)
 SRC=src
 TEST=$(SRC)/tests
-INCLUDE=-I$(SRC) -I$(SRC)/core -I$(SRC)/core/opencl $(EXR_INCLUDES) $(TIFF_INCLUDES)
+INCLUDE=-I$(SRC) -I$(SRC)/core -I$(SRC)/core/opencl $(EXR_INCLUDES) $(TIFF_INCLUDES) -I../
 WARN=-Wall
 CWD=$(shell pwd)
 DEPS= -MM -MF $@.d
@@ -102,7 +102,7 @@ endif
 
 all: default
 
-default: dirs bin/pbrt $(TOOLS) gtest
+default: dirs bin/pbrt $(TOOLS) #gtest
 
 bin/%: dirs
 
