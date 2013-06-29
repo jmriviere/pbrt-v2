@@ -27,7 +27,7 @@ Hit ray_sphere_intersection(Ray ray, Sphere sphere) {
 	Ray rhit;
 
 	rhit.origin = transform(ray.origin, sphere.w2o);
-	rhit.direction = ray.direction;
+	rhit.direction = transform(ray.direction, sphere.w2o);
 
 	float A = dot(ray.direction, ray.direction);
 	float B = 2 * dot(ray.direction, ray.origin);
