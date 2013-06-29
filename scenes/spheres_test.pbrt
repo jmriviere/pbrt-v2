@@ -1,7 +1,7 @@
 LookAt 0 2 -5   0 -.3 0   0 1 0
 Camera "perspective" "float fov" [22]
 
-Renderer "gpu"
+#Renderer "gpu"
 
 Film "image" "integer xresolution" [800] "integer yresolution" [400]
 "string filename" "anim-bluespheres.exr"
@@ -12,19 +12,16 @@ PixelFilter "box"
 WorldBegin
 
 AttributeBegin
-Rotate -90 1 0 0
-LightSource "infinite" "string mapname" ["textures/skylight-day.exr"]
-        "integer nsamples" [8]
+#Rotate -90 1 0 0
+LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
+        "integer nsamples" [64]
 AttributeEnd
 
 AttributeBegin
-#Translate -1.25 0 0
+Material "mirror"
 #Rotate 40 1 1 0
 Shape "sphere" "float radius" [.5]
 
-Material "mirror"
-Translate 0 0 1
-Rotate 45 1 0 0
 
 AttributeEnd
 
