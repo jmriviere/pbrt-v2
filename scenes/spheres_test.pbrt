@@ -1,7 +1,7 @@
 LookAt 0 2 -5   0 -.3 0   0 1 0
 Camera "perspective" "float fov" [22]
 
-#Renderer "gpu"
+Renderer "gpu"
 
 Film "image" "integer xresolution" [800] "integer yresolution" [400]
 "string filename" "anim-bluespheres.exr"
@@ -13,9 +13,11 @@ WorldBegin
 
 AttributeBegin
 #Rotate -90 1 0 0
-LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
-        "integer nsamples" [64]
+#LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
+LightSource "infinite" "string mapname" ["/home/poupine/Graphics/CO417-HW1/GraceCathedral/grace_latlong.pfm"]
+        "integer nsamples" [8]
 AttributeEnd
+
 
 AttributeBegin
 Material "mirror"
