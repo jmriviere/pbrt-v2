@@ -50,7 +50,7 @@ void GpuRenderer::Render(const Scene *scene) {
 	int env_w, env_h;
 
 	// TODO: Get the envmap from the scene.
-	RGBSpectrum* envmap = ReadImage("/home/poupine/Graphics/CO417-HW1/GraceCathedral/grace_latlong.pfm",
+	RGBSpectrum* envmap = ReadImage("/homes/jmr12/Thesis/pbrt-v2/scenes/textures/grace_latlong.exr",
 			&env_w, &env_h);
 
 	float* env = new float[env_w * env_h * 4];

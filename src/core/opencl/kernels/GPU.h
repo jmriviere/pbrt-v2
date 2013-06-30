@@ -22,7 +22,7 @@ typedef struct {
 	float4 m[4];
 } Transformation;
 
-__constant Transformation w2l = { {(float4)(1,0,0,0), (float4)(0,-4.37114e-08,-1,0),(float4)(0,1,-4.37114e-08,0),(float4)(0,0,0,1)} };
+__constant Transformation w2l = { {(float4)(1,0,0,0), (float4)(0,1,0,0),(float4)(0,0,1,0),(float4)(0,0,0,1)} };
 
 typedef struct __attribute__ ((packed)) s_ray {
 	float3 origin;
