@@ -40,7 +40,7 @@ typedef struct s_ray {
 // Describes how to access data about light and primitives
 typedef struct s_metadata {
 	GPUType type;
-	size_t offset;
+	uint32_t offset;
 	float toWorld[16];
 	float fromWorld[16];
 	// Use for infinite lights only
