@@ -43,6 +43,7 @@
 #include "spectrum.h"
 #include "rng.h"
 #include "memory.h"
+#include "util.h"
 
 // Light Declarations
 class Light {
@@ -76,6 +77,8 @@ public:
 
     // Light Public Data
     const int nSamples;
+
+    virtual size_t toGPU(Metadata* meta, void* data) const = 0;
 protected:
     // Light Protected Data
     const Transform LightToWorld, WorldToLight;

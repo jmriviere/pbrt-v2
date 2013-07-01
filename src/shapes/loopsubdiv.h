@@ -54,7 +54,7 @@ public:
     BBox ObjectBound() const;
     BBox WorldBound() const;
 
-    size_t toGPU(void *shape) const;
+    size_t toGPU(Metadata* meta, void* data) const;
 private:
     // LoopSubdiv Private Methods
     static float beta(int valence) {

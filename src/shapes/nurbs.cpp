@@ -303,7 +303,7 @@ void NURBS::Refine(vector<Reference<Shape> > &refined) const {
     delete[] vertices;
 }
 
-size_t NURBS::toGPU(void* shape) const {
+size_t NURBS::toGPU(Metadata* meta, void* data) const {
 	Severe("NURBS not implemented for GPU");
 	return 0;
 }

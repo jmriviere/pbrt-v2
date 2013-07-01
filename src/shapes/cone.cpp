@@ -206,7 +206,7 @@ float Cone::Area() const {
         phiMax / 2.f;
 }
 
-size_t Cone::toGPU(void* shape) const {
+size_t Cone::toGPU(Metadata* meta, void* data) const {
 	Severe("Cone not implemented for GPU");
 	return 0;
 }

@@ -91,4 +91,9 @@ float GonioPhotometricLight::Pdf(const Point &, const Vector &) const {
     return 0.;
 }
 
+size_t GonioPhotometricLight::toGPU(Metadata* meta, void* data) const {
+	Severe("Goniometric lights not implemented for GPU");
+	return 0;
+}
+
 

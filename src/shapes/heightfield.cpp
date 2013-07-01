@@ -111,7 +111,7 @@ void Heightfield::Refine(vector<Reference<Shape> > &refined) const {
     delete[] verts;
 }
 
-size_t Heightfield::toGPU(void * shape) const {
+size_t Heightfield::toGPU(Metadata* meta, void* data) const {
 	Severe("Heightfield not implemented for GPU");
 	return 0;
 }

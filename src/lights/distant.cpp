@@ -101,4 +101,9 @@ Spectrum DistantLight::Sample_L(const Scene *scene,
     return L;
 }
 
+size_t DistantLight::toGPU(Metadata* meta, void* data) const {
+	Severe("Distant lights not implemented for GPU");
+	return 0;
+}
+
 

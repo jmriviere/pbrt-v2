@@ -52,7 +52,7 @@ public:
     float Area() const;
     Point Sample(float u1, float u2, Normal *Ns) const;
 
-    size_t toGPU(void* shape) const;
+    size_t toGPU(Metadata* meta, void* data) const;
 protected:
     // Cylinder Private Data
     float radius, zmin, zmax, phiMax;

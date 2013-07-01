@@ -1,5 +1,5 @@
 /*
- * GPUshapes.h
+ * GPU.h
  *
  *  Created on: 27 Jun 2013
  *      Author: jmr12
@@ -18,11 +18,23 @@ __constant sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE |
 							   CLK_ADDRESS_CLAMP_TO_EDGE |
 							   CLK_FILTER_LINEAR;
 
+typedef enum GPUType {
+	sphere = 0,
+	light = 1
+} GPUType;
+
 typedef struct {
 	float4 m[4];
 } Transformation;
 
-__constant Transformation w2l = { {(float4)(1,0,0,0), (float4)(0,1,0,0),(float4)(0,0,1,0),(float4)(0,0,0,1)} };
+
+typedef struct __attribute__ ((packed)) s_metadata {
+	GPUType type;
+	uint offset;
+	Transformation toWorld;
+	Transformation fromWorld;
+	float2 dim;
+} Metadata;
 
 typedef struct __attribute__ ((packed)) s_ray {
 	float3 origin;
@@ -34,9 +46,7 @@ typedef struct s_hit {
 	float t;
 } Hit;
 
-typedef struct __attribute__ ((packed)) s_sphere {
-	Transformation o2w;
-	Transformation w2o;
+typedef struct s_sphere {
 	float radius;
 } Sphere;
 

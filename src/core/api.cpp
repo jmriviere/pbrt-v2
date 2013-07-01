@@ -1250,7 +1250,7 @@ Renderer *RenderOptions::MakeRenderer() const {
     	Sampler *sampler = MakeSampler(SamplerName, SamplerParams, camera->film, camera);
     	if (lights.size() > 1)
     		Severe("Only one light can be defined, of type: InfiniteLight");
-    	renderer = new GpuRenderer(shapes, sampler, camera, false);
+    	renderer = new GpuRenderer(lights, shapes, sampler, camera, false);
     }
     else {
         if (RendererName != "sampler")

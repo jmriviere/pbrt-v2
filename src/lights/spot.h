@@ -54,6 +54,8 @@ public:
     Spectrum Sample_L(const Scene *scene, const LightSample &ls,
         float u1, float u2, float time, Ray *ray, Normal *Ns, float *pdf) const;
     float Pdf(const Point &, const Vector &) const;
+
+    size_t toGPU(Metadata* meta, void* data) const;
 private:
     // SpotLight Private Data
     Point lightPos;

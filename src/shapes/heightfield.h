@@ -49,7 +49,7 @@ public:
     void Refine(vector<Reference<Shape> > &refined) const;
     BBox ObjectBound() const;
 
-    size_t toGPU(void* shape) const;
+    size_t toGPU(Metadata* meta, void* data) const;
 private:
     // Heightfield Private Data
     float *z;

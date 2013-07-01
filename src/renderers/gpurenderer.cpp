@@ -21,19 +21,28 @@
 #include <time.h>
 
 // SamplerRenderer Method Definitions
-GpuRenderer::GpuRenderer(std::vector<Reference<Shape> > primitives, Sampler *s, Camera *c, bool visIds)  {
+GpuRenderer::GpuRenderer(std::vector<Light*> lights, std::vector<Reference<Shape> > primitives, Sampler *s, Camera *c, bool visIds)  {
 	BasicConfigurator::configure();
     sampler = s;
     camera = c;
     visualizeObjectIds = visIds;
-    GPUSphere* shape;
+
+    Metadata* meta;
+    float* data;
+
+    size_t offset = 0;
 
     for (std::vector<Reference<Shape> >::iterator it = primitives.begin();
     	 it != primitives.end(); ++it) {
-    	size_t c = (*it)->toGPU(NULL);
-    	shape = (GPUSphere*)malloc(c);
-    	c = (*it)->toGPU(shape);
-    	this->primitives.push_back(*shape);
+    	meta = new Metadata;
+    	size_t c = (*it)->toGPU(meta, NULL);
+    	data = new float[c];
+    	c = (*it)->toGPU(meta, data);
+    	meta->offset = offset;
+    	offset += c;
+    	this->meta_primitives.push_back(*meta);
+    	this->primitives.push_back(*data);
+    	delete meta;
     }
 }
 
@@ -47,23 +56,22 @@ void GpuRenderer::Render(const Scene *scene) {
 /*    PBRT_FINISHED_PARSING();
     PBRT_STARTED_RENDERING();*/
 
-	int env_w, env_h;
+	Metadata meta;
 
-	// TODO: Get the envmap from the scene.
-	RGBSpectrum* envmap = ReadImage("/homes/jmr12/Thesis/pbrt-v2/scenes/textures/grace_latlong.exr",
-			&env_w, &env_h);
+	Light* map = scene->lights[0];
 
-	float* env = new float[env_w * env_h * 4];
+	size_t c = map->toGPU(&meta, NULL);
 
-	for (int i = env_w * env_h; i > 0 ; --i) {
-		float rgb[4];
-		envmap[i].ToRGB(rgb);
-		rgb[3] = 1.0;
-		std::memcpy(&env[4 * (env_w * env_h - i)], rgb, 4 * sizeof(float));
-	}
+	std::cout << c << std::endl;
+
+	float* env = new float[c];
+	map->toGPU(&meta, env);
 
 	std::vector<std::pair<size_t, Sample*> > samples;
 	std::vector<gpu_Ray> rays = generateGpuRays(sampler, scene, camera, samples);
+
+	float env_w = meta.dim[0];
+	float env_h = meta.dim[1];
 
 	uint32_t nRays = rays.size();
 
@@ -74,8 +82,6 @@ void GpuRenderer::Render(const Scene *scene) {
     cl::Event ev;
 
     float *Ls = new float[4 * nRays];
-
-    std::cout << env_w << " " << env_h << std::endl;
 
     Host::instance().buildKernels(KERNEL_PATH);
 
@@ -128,6 +134,18 @@ void GpuRenderer::Render(const Scene *scene) {
     	std::cout << "ErrWrite " << kepasa << std::endl;
     }
 
+    cl::Buffer buf_mprims(*(Host::instance())._context, CL_MEM_READ_ONLY, meta_primitives.size() * sizeof(Metadata), NULL, &kepasa);
+
+    if (CL_SUCCESS != kepasa) {
+    	std::cout << "ErrBuf 138 " << kepasa << std::endl;
+    }
+
+    kepasa = Host::instance()._queue->enqueueWriteBuffer(buf_mprims, CL_TRUE, 0, meta_primitives.size() * sizeof(Metadata), &meta_primitives[0], NULL, NULL);
+
+    if (CL_SUCCESS != kepasa) {
+    	std::cout << "ErrWrite 144" << kepasa << std::endl;
+    }
+
     kepasa = Host::instance()._queue->enqueueWriteBuffer(buf_rays, CL_TRUE, 0, nPixels * sampler->samplesPerPixel * sizeof(gpu_Ray), &rays[0], NULL, NULL);
 
 
@@ -135,12 +153,26 @@ void GpuRenderer::Render(const Scene *scene) {
     	std::cout << "ErrWriteR " << kepasa << std::endl;
     }
 
+    cl::Buffer buf_mlights(*(Host::instance())._context, CL_MEM_READ_ONLY, sizeof(Metadata), NULL, &kepasa);
 
-    k.setArg(0, envgpu);
-    k.setArg(1, bufLs);
-    k.setArg(2, buf_rays);
-    k.setArg(3, (uint32_t)primitives.size());
+    if (CL_SUCCESS != kepasa) {
+    	std::cout << "ErrBuf 157 " << kepasa << std::endl;
+    }
+
+    kepasa = Host::instance()._queue->enqueueWriteBuffer(buf_mlights, CL_TRUE, 0, sizeof(Metadata), &meta, NULL, NULL);
+
+    if (CL_SUCCESS != kepasa) {
+    	std::cout << "ErrWrite 144" << kepasa << std::endl;
+    }
+
+
+    k.setArg(0, bufLs);
+    k.setArg(1, buf_rays);
+    k.setArg(2, (uint32_t)meta_primitives.size());
+    k.setArg(3, buf_mprims);
     k.setArg(4, buf_prims);
+    k.setArg(5, buf_mlights);
+    k.setArg(6, envgpu);
 
 
     kepasa = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange, cl::NDRange(nRays),

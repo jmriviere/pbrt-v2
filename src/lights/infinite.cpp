@@ -290,4 +290,29 @@ Spectrum InfiniteAreaLight::Sample_L(const Scene *scene,
     return Ls;
 }
 
+size_t InfiniteAreaLight::toGPU(Metadata* meta, void* data) const {
+	if (NULL != data) {
+		meta->type = light;
+		std::memcpy( &(meta->toWorld), &(LightToWorld.GetMatrix().m), sizeof(float) * 16);
+		std::memcpy( &(meta->fromWorld), &(WorldToLight.GetMatrix().m), sizeof(float) * 16);
+
+		float step_x = 1./((float) radianceMap->Width());
+		float step_y = 1./((float) radianceMap->Height());
+
+		float rgb[4];
+
+		for (uint32_t x = 0; x < radianceMap->Width(); x++) {
+			for (uint32_t y = 0; y < radianceMap->Height(); y++) {
+				Spectrum s = radianceMap->Lookup( (float) x  * step_x, (float) y * step_y);
+				s.ToRGB(rgb);
+				rgb[3] = 1;
+				std::memcpy(&((float *)data)[x * radianceMap->Height() + 4 * y], rgb, sizeof(rgb));
+			}
+		}
+		meta->dim[0] = radianceMap->Width();
+		meta->dim[1] = radianceMap->Height();
+	}
+	return radianceMap->Height() * radianceMap->Width() * 4;
+}
+
 

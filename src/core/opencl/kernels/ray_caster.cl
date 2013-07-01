@@ -20,14 +20,14 @@ float3 transform(float3 r, Transformation t) {
 	return ret;
 }
 
-Hit ray_sphere_intersection(Ray ray, Sphere sphere) {
+Hit ray_sphere_intersection(Ray ray, Sphere sphere, Metadata meta_sphere) {
 
 	Hit h;
 
 	Ray rhit;
 
-	rhit.origin = transform(ray.origin, sphere.w2o);
-	rhit.direction = transform(ray.direction, sphere.w2o);
+	rhit.origin = transform(ray.origin, meta_sphere.fromWorld);
+	rhit.direction = transform(ray.direction, meta_sphere.fromWorld);
 
 	float A = dot(ray.direction, ray.direction);
 	float B = 2 * dot(ray.direction, ray.origin);
@@ -53,6 +53,18 @@ Hit ray_sphere_intersection(Ray ray, Sphere sphere) {
 	return h;
 }
 
+Hit intersection(Ray ray, __global float* prims, Metadata meta_prim) {
+	switch (meta_prim.type) {
+	case sphere:
+		Sphere s;
+		s.radius = *(prims + meta_prim.offset);
+		return ray_sphere_intersection(ray, s, meta_prim);
+		break;
+	default:
+		break;
+	}
+}
+
 Ray reflection(Hit h) {
 	float3 n = normalize(h.ray.origin + h.t * h.ray.direction);
 	Ray ref;
@@ -61,8 +73,8 @@ Ray reflection(Hit h) {
 	return ref;
 }
 
-Color lookup(image2d_t env, Ray ray) {
-	float3 dir = normalize(transform(ray.direction, w2l));
+Color lookup(image2d_t env, Metadata meta_env, Ray ray) {
+	float3 dir = normalize(transform(ray.direction, meta_env.fromWorld));
 	float theta = acos(dir.s2);
 	float phi = atan2(dir.s1, dir.s0);
 	float x = (phi < 0 ? phi + 2 * M_PI : phi)/(2 * M_PI); //(phi + M_PI)/(2 * M_PI);
@@ -71,28 +83,23 @@ Color lookup(image2d_t env, Ray ray) {
 	return c;
 }
 
-__kernel void ray_cast(__read_only image2d_t env, __global float4* Ls, __global Ray* rays, int nb_prim, __global Sphere* spheres) {
+__kernel void ray_cast(__global float4* Ls, __global Ray* rays, int nb_prim, __global Metadata* meta_prims,
+					   __global float* prims, __global Metadata* meta_light, __read_only image2d_t env) {
 
+	// Index
 	int p = get_global_id(0);
+
+
 	Hit hit;
 	for (int i = 0; i < nb_prim; ++i) {
-		if (0 == p) {
-			printf("Lololol %d\n", sizeof(Sphere));
-			printf("Radius: %f", spheres[i].radius);
-		}
-		hit = ray_sphere_intersection(rays[p], spheres[i]);
+		hit = intersection(rays[p], prims, meta_prims[i]);
 		if (hit.t != -1) {
-			Color c = lookup(env, reflection(hit));
+			Color c = lookup(env, meta_light[0], reflection(hit));
 			Ls[p] = c;
 		}
 		else {
-		     Color c = lookup(env, rays[p]);
+		     Color c = lookup(env, meta_light[0], rays[p]);
 		     Ls[p] = c;
-		}
-	}
-	if(p == 0) {
-		for(int i =0; i < 4; ++i){
-			printf("\n%f,%f,%f,%f\n", w2l.m[i].s0,w2l.m[i].s1,w2l.m[i].s2,w2l.m[i].s3);
 		}
 	}
 }

@@ -113,4 +113,7 @@ Spectrum SpotLight::Sample_L(const Scene *scene, const LightSample &ls,
     return Intensity * Falloff(ray->d);
 }
 
-
+size_t SpotLight::toGPU(Metadata* meta, void* data) const {
+	Severe("Spot Lights not implemented for GPU");
+	return 0;
+}

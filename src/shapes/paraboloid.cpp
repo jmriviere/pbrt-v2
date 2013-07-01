@@ -209,7 +209,7 @@ float Paraboloid::Area() const {
         (powf(1+4*zmin, 1.5f) - powf(1+4*zmax, 1.5f));
 }
 
-size_t Paraboloid::toGPU(void* shape) const {
+size_t Paraboloid::toGPU(Metadata* meta, void* data) const {
 	Severe("Paraboloid not implemented on GPU");
 	return 0;
 }

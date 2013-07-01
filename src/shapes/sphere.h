@@ -39,10 +39,6 @@
 // shapes/sphere.h*
 #include "shape.h"
 
-typedef struct s_Sphere : GPUShape {
-	float radius;
-} GPUSphere;
-
 // Sphere Declarations
 class Sphere : public Shape {
 public:
@@ -58,7 +54,7 @@ public:
     Point Sample(const Point &p, float u1, float u2, Normal *ns) const;
     float Pdf(const Point &p, const Vector &wi) const;
 
-    size_t toGPU(void *shape) const;
+    size_t toGPU(Metadata* meta, void* data) const;
 private:
     // Sphere Private Data
     float radius;

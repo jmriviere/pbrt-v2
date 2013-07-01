@@ -43,11 +43,7 @@
 #include "transform.h"
 #include "diffgeom.h"
 #include "memory.h"
-
-typedef struct s_Shape {
-	float o2w[16];
-	float w2o[16];
-} GPUShape;
+#include "util.h"
 
 // Shape Declarations
 class Shape : public ReferenceCounted {
@@ -82,7 +78,7 @@ public:
     virtual float Pdf(const Point &p, const Vector &wi) const;
 
     // Convert a shape to a struct to be copied to GPU.
-    virtual size_t toGPU(void* shape) const = 0;
+    virtual size_t toGPU(Metadata* meta, void* data) const = 0;
 
     // Shape Public Data
     const Transform *ObjectToWorld, *WorldToObject;

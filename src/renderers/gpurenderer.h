@@ -19,22 +19,11 @@
  * The dummy fields are present to account for memory alignment on the GPU.
  * */
 
-#pragma pack(push, 1)
-
-typedef struct s_ray {
-	float origin[3];
-	float dummy;
-	float direction[3];
-	float dummy2;
-} gpu_Ray;
-
-#pragma pack(pop)
-
 // SamplerRenderer Declarations
 class GpuRenderer : public Renderer {
 public:
     // SamplerRenderer Public Methods
-    GpuRenderer(std::vector<Reference<Shape> > primitives, Sampler *s, Camera *c, bool visIds);
+    GpuRenderer(std::vector<Light*> lights,std::vector<Reference<Shape> > primitives, Sampler *s, Camera *c, bool visIds);
     ~GpuRenderer();
     void Render(const Scene *scene);
     Spectrum Li(const Scene *scene, const RayDifferential &ray,
@@ -47,7 +36,9 @@ private:
     bool visualizeObjectIds;
     Sampler *sampler;
     Camera *camera;
-    std::vector<GPUSphere> primitives;
+
+    std::vector<Metadata> meta_primitives;
+    std::vector<float> primitives;
 };
 
 static std::vector<gpu_Ray> generateGpuRays(Sampler* sampler, const Scene* scene,
