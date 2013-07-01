@@ -301,12 +301,12 @@ size_t InfiniteAreaLight::toGPU(Metadata* meta, void* data) const {
 
 		float rgb[4];
 
-		for (uint32_t x = 0; x < radianceMap->Width(); x++) {
-			for (uint32_t y = 0; y < radianceMap->Height(); y++) {
+		for (uint32_t y = 0; y < radianceMap->Height(); y++) {
+			for (uint32_t x = 0; x < radianceMap->Width(); x++) {
 				Spectrum s = radianceMap->Lookup( (float) x  * step_x, (float) y * step_y);
 				s.ToRGB(rgb);
-				rgb[3] = 1;
-				std::memcpy(&((float *)data)[x * radianceMap->Height() + 4 * y], rgb, sizeof(rgb));
+				rgb[3] = 1.0;
+				std::memcpy(&((float *)data)[4 * (y * radianceMap->Width() +  x)], rgb, sizeof(rgb));
 			}
 		}
 		meta->dim[0] = radianceMap->Width();

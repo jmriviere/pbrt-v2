@@ -62,7 +62,6 @@ void GpuRenderer::Render(const Scene *scene) {
 
 	size_t c = map->toGPU(&meta, NULL);
 
-	std::cout << c << std::endl;
 
 	float* env = new float[c];
 	map->toGPU(&meta, env);
@@ -109,6 +108,8 @@ void GpuRenderer::Render(const Scene *scene) {
     if (CL_SUCCESS != kepasa) {
     	std::cout << "ErrImW " << kepasa << std::endl;
     }
+
+    delete env;
 
     cl::Buffer bufLs(*(Host::instance())._context, CL_MEM_WRITE_ONLY, 4 * nRays * sizeof(float), NULL, &kepasa);
 

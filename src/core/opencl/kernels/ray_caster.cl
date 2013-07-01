@@ -83,6 +83,7 @@ Color lookup(image2d_t env, Metadata meta_env, Ray ray) {
 	return c;
 }
 
+
 __kernel void ray_cast(__global float4* Ls, __global Ray* rays, int nb_prim, __global Metadata* meta_prims,
 					   __global float* prims, __global Metadata* meta_light, __read_only image2d_t env) {
 
