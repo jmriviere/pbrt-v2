@@ -278,7 +278,7 @@ size_t Sphere::toGPU(Metadata* meta, void* data) const {
 		meta->type = sphere;
 		std::memcpy( &(meta->toWorld), &(ObjectToWorld->GetMatrix().m), sizeof(float) * 16);
 		std::memcpy( &(meta->fromWorld), &(WorldToObject->GetMatrix().m), sizeof(float) * 16);
-		*((GPUSphere *) data) = radius;
+		((GPUSphere *) data)->radius = radius;
 	}
 	return 1;
 }
