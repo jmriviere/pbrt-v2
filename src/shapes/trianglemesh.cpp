@@ -367,7 +367,7 @@ void Triangle::GetShadingGeometry(const Transform &obj2world,
     dgShading->dpdx = dg.dpdx;  dgShading->dpdy = dg.dpdy;
 }
 
-size_t TriangleMesh::toGPU(Metadata* meta, void* data) const {
+uint32_t TriangleMesh::toGPU(Metadata* meta, void* data) const {
 	Severe("Triangles not implemented for GPU");
 	return 0;
 }
@@ -459,7 +459,7 @@ Point Triangle::Sample(float u1, float u2, Normal *Ns) const {
     return p;
 }
 
-size_t Triangle::toGPU(Metadata* meta, void* data) const {
+uint32_t Triangle::toGPU(Metadata* meta, void* data) const {
 	Severe("Triangles not implemented for GPU");
 	return 0;
 }

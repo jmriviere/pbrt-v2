@@ -1,4 +1,4 @@
-LookAt 0 5 0   0 0 0   0 0 1
+LookAt 0 5 0   0 0 0   0 0 -1
 Camera "perspective" "float fov" [22]
 
 Renderer "gpu"
@@ -6,7 +6,7 @@ Renderer "gpu"
 Film "image" "integer xresolution" [800] "integer yresolution" [400]
 "string filename" "anim-bluespheres.exr"
 
-Sampler "lowdiscrepancy" "integer pixelsamples" [1]
+Sampler "lowdiscrepancy" "integer pixelsamples" [2]
 PixelFilter "box"
 
 WorldBegin
@@ -18,13 +18,17 @@ LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
         "integer nsamples" [8]
 AttributeEnd
 
-
 AttributeBegin
-#Rotate 40 1 1 0
+Translate 1.25 0 0
 Material "mirror"
 Shape "sphere" "float radius" [.5]
+AttributeEnd
 
 
+AttributeBegin
+Translate -1.25 0 0
+Material "mirror"
+Shape "sphere" "float radius" [.5]
 AttributeEnd
 
 WorldEnd

@@ -12,7 +12,7 @@
 #define M_PI           3.14159265358979323846
 #endif
 
-#pragma OPENCL EXTENSION cl_amd_printf : enable
+//#pragma OPENCL EXTENSION cl_amd_printf : enable
 
 __constant sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE |
 							   CLK_ADDRESS_CLAMP_TO_EDGE |
@@ -29,11 +29,11 @@ typedef struct {
 
 
 typedef struct __attribute__ ((packed)) s_metadata {
-	GPUType type;
-	uint offset;
 	Transformation toWorld;
 	Transformation fromWorld;
-	float2 dim;
+	GPUType type;
+	uint offset;
+	uint2 dim;
 } Metadata;
 
 typedef struct __attribute__ ((packed)) s_ray {
@@ -41,14 +41,14 @@ typedef struct __attribute__ ((packed)) s_ray {
 	float3 direction;
 } Ray;
 
-typedef struct s_hit {
-	Ray ray;
-	float t;
-} Hit;
-
 typedef struct s_sphere {
 	float radius;
 } Sphere;
+
+typedef struct Hit {
+	int id;
+	float t;
+} Hit;
 
 typedef float4 Color;
 

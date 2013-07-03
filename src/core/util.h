@@ -39,12 +39,12 @@ typedef struct s_ray {
 
 // Describes how to access data about light and primitives
 typedef struct s_metadata {
-	GPUType type;
-	uint32_t offset;
 	float toWorld[16];
 	float fromWorld[16];
+	GPUType type;
+	uint32_t offset;
 	// Use for infinite lights only
-	float dim[2];
+	uint32_t dim[2];
 } Metadata;
 
 #pragma pack(pop)

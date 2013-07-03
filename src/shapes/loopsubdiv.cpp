@@ -491,7 +491,7 @@ Point LoopSubdiv::weightBoundary(SDVertex *vert, float beta) {
     return P;
 }
 
-size_t LoopSubdiv::toGPU(Metadata* meta, void* data) const {
+uint32_t LoopSubdiv::toGPU(Metadata* meta, void* data) const {
 	Severe("Loops not implemented for GPU");
 }
 

@@ -54,7 +54,7 @@ public:
     Point Sample(const Point &p, float u1, float u2, Normal *ns) const;
     float Pdf(const Point &p, const Vector &wi) const;
 
-    size_t toGPU(Metadata* meta, void* data) const;
+    uint32_t toGPU(Metadata* meta, void* data) const;
 private:
     // Sphere Private Data
     float radius;

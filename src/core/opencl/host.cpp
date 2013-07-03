@@ -169,6 +169,7 @@ Host::Host() : p_index(0) {
 		cl::Platform::get(&_platforms);
 		LOG(logger, INFO, platforms());
 		_platforms[p_index].getDevices(CL_DEVICE_TYPE_ALL, &_devices);
+		LOG(logger, INFO, "Found " << _devices.size() << " devices\n");
 		check_gpu();
 		LOG(logger, INFO, device());
 		_context = new cl::Context(_devices);

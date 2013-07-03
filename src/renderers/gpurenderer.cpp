@@ -30,12 +30,12 @@ GpuRenderer::GpuRenderer(std::vector<Light*> lights, std::vector<Reference<Shape
     Metadata* meta;
     float* data;
 
-    size_t offset = 0;
+    uint32_t offset = 0;
 
     for (std::vector<Reference<Shape> >::iterator it = primitives.begin();
     	 it != primitives.end(); ++it) {
     	meta = new Metadata;
-    	size_t c = (*it)->toGPU(meta, NULL);
+    	uint32_t c = (*it)->toGPU(meta, NULL);
     	data = new float[c];
     	c = (*it)->toGPU(meta, data);
     	meta->offset = offset;
@@ -177,7 +177,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
 
     kepasa = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange, cl::NDRange(nRays),
-    											  cl::NDRange(1), NULL, &ev);
+    											  cl::NullRange, NULL, &ev);
 
     if (CL_SUCCESS != kepasa) {
     	std::cout << "ErrND " << kepasa << std::endl;
@@ -214,7 +214,7 @@ void GpuRenderer::Render(const Scene *scene) {
     //camera->film->UpdateDisplay(sampler->xPixelStart,
     //        sampler->yPixelStart, sampler->xPixelEnd+1, sampler->yPixelEnd+1);
     camera->film->WriteImage();
-    std::cout << sizeof(GPUSphere) << std::endl;
+    delete Ls;
 }
 
 Spectrum GpuRenderer::Li(const Scene* scene, const RayDifferential & ray, const Sample* sample,
