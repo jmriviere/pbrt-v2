@@ -18,11 +18,8 @@ float3 transform(float3 r, Transformation t) {
 }
 
 
-Ray reflection(Ray ray, float3 n) {
-	Ray ref;
-	ref.direction = 2 * dot(ray.direction, n) * n - ray.direction;
-	ref.origin = n;
-	return ref;
+float3 reflection(Ray ray, float3 n) {
+	return 2 * dot(ray.direction, n) * n - ray.direction;
 }
 
 #define OFFSETOF(type, field)    ((unsigned long) &(((type *) 0)->field))
@@ -39,16 +36,23 @@ bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global floa
 	float B = 2 * dot(trans.direction, trans.origin);
 	float C = dot(trans.origin, trans.origin) - sphere.radius * sphere.radius;
 
-	float inv2A = 1/(2 * A);
-
 	float delta = B*B - 4*A*C;
 
 	if (delta < 0) {
 		return false;
 	}
+
 	float sqrt_d = sqrt(delta);
-	float t1 = (-B - sqrt_d) * inv2A;
-	float t2 = (-B + sqrt_d) * inv2A;
+
+	float q;
+
+	if (B < 0)
+	        q = (-B - sqrt_d)/2.0;
+	    else
+	        q = (-B + sqrt_d)/2.0;
+
+	float t1 = q/A;
+	float t2 = C/q;
 
 	hit->t =  (t1 > t2 ? t1 : t2);
 
@@ -58,14 +62,14 @@ bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global floa
 //A revoir
 bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float* prims, int nb_prims) {
 	bool intersect = false;
-
+	float temp;
 	hit->t = 1e5;
 
 	for (uint i = 0; i < nb_prims; ++i) {
 		switch (meta_prims[i].type) {
 		case sphere:
-			float temp = hit->t;
-			if (ray_sphere_intersection(hit, ray, meta_prims[i], prims) && hit->t < temp) {
+			temp = hit->t;
+			if (intersect = ray_sphere_intersection(hit, ray, meta_prims[i], prims) && hit->t < temp && hit->t >= 1e-2) {
 				hit->id = i;
 			}
 			else {
@@ -76,7 +80,7 @@ bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float*
 			break;
 		}
 	}
-	return intersect;
+	return hit->t < 1e5;
 }
 
 
@@ -97,11 +101,11 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 	int i = 0;
 
-	while(intersect(&hit, ray, meta_prims, prims, nb_prims) && i++ <= 3) {
-		ray.origin = transform(ray.origin, meta_prims[hit.id].fromWorld);
-		float3 n = normalize(ray.origin + hit.t * ray.direction);
-		ray.origin = transform(ray.origin, meta_prims[hit.id].toWorld);
-		ray = reflection(ray, n);
+	while(intersect(&hit, ray, meta_prims, prims, nb_prims) && i++ <= 10) {
+		float3 hitpoint = ray.origin + hit.t * ray.direction; // hitpoint in world space
+		float3 n = normalize(transform(hitpoint, meta_prims[hit.id].fromWorld));
+		ray.origin = hitpoint;
+		ray.direction = reflection(ray, n);
 	}
 	return lookup(env, meta_prims[hit.id], ray);
 }

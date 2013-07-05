@@ -4,7 +4,7 @@ Camera "perspective" "float fov" [22]
 Renderer "gpu"
 
 Film "image" "integer xresolution" [800] "integer yresolution" [400]
-"string filename" "anim-bluespheres.exr"
+"string filename" "gpu.exr"
 
 Sampler "lowdiscrepancy" "integer pixelsamples" [2]
 PixelFilter "box"
