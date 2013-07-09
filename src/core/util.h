@@ -28,6 +28,12 @@ enum GPUType {
 	light = 1
 };
 
+enum GPUMaterial {
+	DIFF = 0,
+	SPEC = 1,
+	REFR = 2
+};
+
 #pragma pack(push, 1)
 
 typedef struct s_ray {
@@ -43,8 +49,10 @@ typedef struct s_metadata {
 	float fromWorld[16];
 	GPUType type;
 	uint32_t offset;
-	// Use for infinite lights only
-	uint32_t dim[2];
+	union {
+		uint32_t dim[2]; // Light dimensions
+		GPUMaterial mat; // Object material
+	};
 } Metadata;
 
 #pragma pack(pop)

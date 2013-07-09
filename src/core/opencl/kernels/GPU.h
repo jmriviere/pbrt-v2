@@ -12,6 +12,9 @@
 #define M_PI           3.14159265358979323846
 #endif
 
+
+#define OFFSETOF(type, field)    ((unsigned long) &(((type *) 0)->field))
+
 //#pragma OPENCL EXTENSION cl_amd_printf : enable
 
 __constant sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE |
@@ -23,6 +26,12 @@ typedef enum GPUType {
 	light = 1
 } GPUType;
 
+typedef enum GPUMaterial {
+	DIFF = 0,
+	SPEC = 1,
+	REFR = 2
+} GPUMaterial;
+
 typedef struct {
 	float4 m[4];
 } Transformation;
@@ -33,7 +42,10 @@ typedef struct __attribute__ ((packed)) s_metadata {
 	Transformation fromWorld;
 	GPUType type;
 	uint offset;
-	uint2 dim;
+	union {
+		uint2 dim;
+		GPUMaterial mat;
+	};
 } Metadata;
 
 typedef struct __attribute__ ((packed)) s_ray {
