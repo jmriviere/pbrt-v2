@@ -3,10 +3,13 @@ Camera "perspective" "float fov" [22]
 
 Renderer "gpu"
 
-Film "image" "integer xresolution" [800] "integer yresolution" [400]
+Film "image" "integer xresolution" [100] "integer yresolution" [50]
 "string filename" "gpu.exr"
 
-Sampler "lowdiscrepancy" "integer pixelsamples" [16]
+SurfaceIntegrator "path" "integer maxdepth" [5]
+"string strategy" "all"
+
+Sampler "lowdiscrepancy" "integer pixelsamples" [1024]
 PixelFilter "box"
 
 WorldBegin
@@ -18,17 +21,17 @@ LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
         "integer nsamples" [8]
 AttributeEnd
 
+#AttributeBegin
+#Translate 0 -2 0
+#Material "mirror"
+#Shape "sphere" "float radius" [.5]
+#AttributeEnd
+
+
 AttributeBegin
 Translate 0 0 0
 Material "glass"
 Shape "sphere" "float radius" [.5]
-AttributeEnd
-
-
-AttributeBegin
-Translate 0 0 0
-Material "glass"
-Shape "sphere" "float radius" [.2]
 AttributeEnd
 
 WorldEnd

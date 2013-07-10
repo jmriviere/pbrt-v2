@@ -63,7 +63,7 @@ bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float*
 		switch (meta_prims[i].type) {
 		case sphere:
 			temp = hit->t;
-			if (ray_sphere_intersection(hit, ray, meta_prims[i], prims) && hit->t < temp && hit->t >= 1e-2) {
+			if (ray_sphere_intersection(hit, ray, meta_prims[i], prims) && hit->t < temp && hit->t > 1e-2) {
 				hit->id = i;
 			}
 			else {
@@ -90,63 +90,89 @@ Color lookup(image2d_t env, Metadata meta_env, Ray ray) {
 }
 
 Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global float* prims,
-			   int nb_prims, float rand) {
+			   int nb_prims, float rande) {
 
 	Color reflectance = (Color)(1, 1, 1, 1);
+	Color cl = (Color)(0,0,0,0);
+
+	threefry4x32_key_t k = {{get_global_id(0), 0xdecafbad, 0xfacebead, 0x12345678}};
+	threefry4x32_ctr_t cc = {{0, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};
+	threefry4x32_ctr_t r;
 
 	Hit hit;
 
 	uint i = 0;
+	float3 hitpoint;
 
 	while(true) {
-		if (i++ >= 2 || !intersect(&hit, ray, meta_prims, prims, nb_prims)) {
-			return reflectance * lookup(env, meta_prims[hit.id], ray);
+		cc.v[0]++;
+		r = threefry4x32(cc, k);
+
+		float rand = u01_open_open_32_24(r.v[0]);
+
+		if (!intersect(&hit, ray, meta_prims, prims, nb_prims)) {
+			cl += reflectance * lookup(env, meta_prims[hit.id], ray);
+			return cl;
 		}
-		else {
-			if (hit.t < 1e-2)
-				continue;
-			float3 hitpoint = ray.origin + (hit.t + 1e-1) * ray.direction; // hitpoint in world space
-			float3 n = normalize(transform(hitpoint, meta_prims[hit.id].fromWorld));
-			ray.origin = hitpoint;
-			switch (meta_prims[hit.id].mat) {
-			case SPEC:
-				ray.direction = reflection(ray, n);
-				break;
-			case DIFF:
+
+		float p = min(0.5f, reflectance.s1);
+
+		if (i++ > 5) {
+			if (rand < p) {
+				reflectance /= p;
+			}
+			else {
+				return cl;
+			}
+		}
+
+		hitpoint = ray.origin + hit.t * ray.direction; // hitpoint in world space
+		float3 n = normalize(transform(hitpoint, meta_prims[hit.id].fromWorld));
+		ray.origin = hitpoint;
+
+		switch (meta_prims[hit.id].mat) {
+		//switch (hit.id) {
+		case 0:
+		//default:
+			//ray.direction = reflection(ray, n);
+			cl += reflectance * (Color)(1, 0, 0, 1);
+			break;
+			/*case DIFF:
 			//default:
 				float x = cos(2.f * M_PI * rand) * sqrt(1 - rand * rand);
 				float y = sin(2.f * M_PI * rand) * sqrt(1 - rand * rand);
 				float z = rand;
 				ray.direction = normalize((float3)(x, y, z));
-				break;
-			case REFR:
-			default:
-				float3 nl = dot(ray.direction, n) < 0 ? n : -n;
-				bool into = dot(n, nl) < 0;
-				float3 reflectiondir = reflection(ray, nl);
+				break;*/
+		case REFR:
+		default:
+			float3 nl = dot(ray.direction, n) < 0 ? n : -n;
+			bool into = dot(n, nl) < 0;
+			float3 reflectiondir = reflection(ray, nl);
 
-				float nc=1.f, nt=1.5, nnt=into?nc/nt:nt/nc, ddn=dot(ray.direction, nl), cos2t;
+			float nc=1.f, nt=1.5, nnt=into?nc/nt:nt/nc, ddn=dot(ray.direction, nl), cos2t;
 
-				if ((cos2t=1-nnt*nnt*(1-ddn*ddn))<0){
-					ray.direction = reflectiondir;
-					continue;
-				}
-
-				float3 transmissiondir = refraction(ray, nl, nnt);
-				float a=nt-nc, b=nt+nc, R0=a*a/(b*b), c = 1-(into?-ddn:dot(n, transmissiondir));
-			    float Re = Rpercent(ray, n, nc, nt);//R0 + (1-R0) * c * c * c * c * c;
-			    float Tr = 1.f-Re, P = 0.25 + 0.5 * Re, Rp = Re/P, Tp = Tr/(1-P);
-
-			    if (rand < P) {
-			    	reflectance *= Rp;
-			    	ray.direction = reflectiondir;
-			    }
-			    else {
-			    	reflectance *= Tp;
-			    	ray.direction = transmissiondir;
-			    }
-				break;
+			if ((cos2t=1-nnt*nnt*(1-ddn*ddn))<0){
+				ray.direction = reflectiondir;
+				continue;
 			}
+
+			float3 transmissiondir = refraction(ray, nl, nnt);
+			float a= nt-nc, b=nt+nc, R0=a*a/(b*b), c = 1-(into?-ddn:dot(n, transmissiondir));
+			float Re = R0 + (1-R0) * c * c * c * c * c; //Rpercent(ray, n, nc, nt);
+			float Tr = 1.f-Re, P = 0.25 + 0.5 * Re, Rp = Re/P, Tp = Tr/(1-P);
+
+			rand = u01_open_open_32_24(r.v[0]);
+
+			if (rand < P) {
+				reflectance *= Rp;
+				ray.direction = reflectiondir;
+			}
+			else {
+				reflectance *= Tp;
+				ray.direction = transmissiondir;
+			}
+			break;
 		}
 	}
 }
