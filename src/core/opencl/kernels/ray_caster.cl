@@ -42,14 +42,37 @@ bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global floa
 	float q;
 
 	if (B < 0)
-	        q = (-B - sqrt_d)/2.0;
+	        q = -0.5 * (B - sqrt_d);
 	    else
-	        q = (-B + sqrt_d)/2.0;
+	        q = -0.5 * (B + sqrt_d)/2.0;
 
-	float t1 = q/A;
-	float t2 = C/q;
+	float t0 = q/A;
+	float t1 = C/q;
 
-	hit->t =  (t1 > t2 ? t1 : t2);
+	// make sure t0 is smaller than t1
+	if (t0 > t1)
+	{
+		// if t0 is bigger than t1 swap them around
+		float temp = t0;
+		t0 = t1;
+		t1 = temp;
+	}
+
+	// if t1 is less than zero, the object is in the ray's negative direction
+	// and consequently the ray misses the sphere
+	if (t1 < 0)
+		return false;
+
+	// if t0 is less than zero, the intersection point is at t1
+	if (t0 < 0)
+	{
+		hit->t = t1;
+	}
+	// else the intersection point is at t0
+	else
+	{
+		hit->t = t0;
+	}
 
 	return true;
 }
@@ -63,7 +86,7 @@ bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float*
 		switch (meta_prims[i].type) {
 		case sphere:
 			temp = hit->t;
-			if (ray_sphere_intersection(hit, ray, meta_prims[i], prims) && hit->t < temp && hit->t > 1e-2) {
+			if (ray_sphere_intersection(hit, ray, meta_prims[i], prims) && hit->t < temp) {
 				hit->id = i;
 			}
 			else {
@@ -90,7 +113,7 @@ Color lookup(image2d_t env, Metadata meta_env, Ray ray) {
 }
 
 Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global float* prims,
-			   int nb_prims, float rande) {
+			   int nb_prims) {
 
 	Color reflectance = (Color)(1, 1, 1, 1);
 	Color cl = (Color)(0,0,0,0);
@@ -117,6 +140,11 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 		float p = min(0.5f, reflectance.s1);
 
+		if (hit.t < 1e-2) {
+			ray.origin += 1e-2 * ray.direction;
+			continue;
+		}
+
 		if (i++ > 5) {
 			if (rand < p) {
 				reflectance /= p;
@@ -130,12 +158,12 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		float3 n = normalize(transform(hitpoint, meta_prims[hit.id].fromWorld));
 		ray.origin = hitpoint;
 
-		switch (meta_prims[hit.id].mat) {
-		//switch (hit.id) {
+
+		//switch (meta_prims[hit.id].mat) {
+		switch (hit.id) {
 		case 0:
 		//default:
-			//ray.direction = reflection(ray, n);
-			cl += reflectance * (Color)(1, 0, 0, 1);
+			ray.direction = reflection(ray, n);
 			break;
 			/*case DIFF:
 			//default:
@@ -147,7 +175,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		case REFR:
 		default:
 			float3 nl = dot(ray.direction, n) < 0 ? n : -n;
-			bool into = dot(n, nl) < 0;
+			bool into = dot(n, nl) > 0;
 			float3 reflectiondir = reflection(ray, nl);
 
 			float nc=1.f, nt=1.5, nnt=into?nc/nt:nt/nc, ddn=dot(ray.direction, nl), cos2t;
@@ -157,7 +185,8 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 				continue;
 			}
 
-			float3 transmissiondir = refraction(ray, nl, nnt);
+//			float3 transmissiondir = refraction(ray, nl, nnt);
+			float3 transmissiondir = normalize(ray.direction*nnt - n*((into?1:-1)*(ddn*nnt+sqrt(cos2t))));
 			float a= nt-nc, b=nt+nc, R0=a*a/(b*b), c = 1-(into?-ddn:dot(n, transmissiondir));
 			float Re = R0 + (1-R0) * c * c * c * c * c; //Rpercent(ray, n, nc, nt);
 			float Tr = 1.f-Re, P = 0.25 + 0.5 * Re, Rp = Re/P, Tp = Tr/(1-P);
@@ -178,13 +207,12 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 }
 
 __kernel void ray_cast(__global float4* Ls, __global Ray* rays, int nb_prims, __global Metadata* meta_prims,
-					   __global float* prims, __global Metadata* meta_light, __read_only image2d_t env,
-					   __global float* rands) {
+					   __global float* prims, __global Metadata* meta_light, __read_only image2d_t env) {
 
 	// Index
 	int p = get_global_id(0);
 
 	Hit hit;
 
-	Ls[p] = radiance(env, rays[p], meta_prims, prims, nb_prims, rands[p]);
+	Ls[p] = radiance(env, rays[p], meta_prims, prims, nb_prims);
 }

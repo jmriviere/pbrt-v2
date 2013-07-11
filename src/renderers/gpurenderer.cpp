@@ -166,28 +166,6 @@ void GpuRenderer::Render(const Scene *scene) {
     	std::cout << "ErrWrite 144" << kepasa << std::endl;
     }
 
-    srand(time(NULL));
-
-    float* rands = new float[nPixels * sampler->samplesPerPixel];
-
-    // Random numbers buffer
-    for (uint32_t i = 0; i < nPixels * sampler->samplesPerPixel; ++i) {
-    	rands[i] = ((float)rand()/RAND_MAX);
-    }
-
-    cl::Buffer buf_rands(*(Host::instance())._context, CL_MEM_READ_ONLY, sizeof(float) * nPixels * sampler->samplesPerPixel, NULL, &kepasa);
-
-    if (CL_SUCCESS != kepasa) {
-    	std::cout << "ErrBuf 181 " << kepasa << std::endl;
-    }
-
-    kepasa = Host::instance()._queue->enqueueWriteBuffer(buf_rands, CL_TRUE, 0, sizeof(float) * nPixels * sampler->samplesPerPixel, rands, NULL, NULL);
-
-    if (CL_SUCCESS != kepasa) {
-    	std::cout << "ErrWrite 187" << kepasa << std::endl;
-    }
-
-
     k.setArg(0, bufLs);
     k.setArg(1, buf_rays);
     k.setArg(2, (uint32_t)meta_primitives.size());
@@ -195,7 +173,6 @@ void GpuRenderer::Render(const Scene *scene) {
     k.setArg(4, buf_prims);
     k.setArg(5, buf_mlights);
     k.setArg(6, envgpu);
-    k.setArg(7, buf_rands);
 
     kepasa = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange, cl::NDRange(nRays),
     											  cl::NullRange, NULL, &ev);
@@ -234,7 +211,6 @@ void GpuRenderer::Render(const Scene *scene) {
     //        sampler->yPixelStart, sampler->xPixelEnd+1, sampler->yPixelEnd+1);
     camera->film->WriteImage();
     delete Ls;
-    delete rands;
 }
 
 Spectrum GpuRenderer::Li(const Scene* scene, const RayDifferential & ray, const Sample* sample,
