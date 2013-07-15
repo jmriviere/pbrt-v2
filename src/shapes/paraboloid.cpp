@@ -209,12 +209,6 @@ float Paraboloid::Area() const {
         (powf(1+4*zmin, 1.5f) - powf(1+4*zmax, 1.5f));
 }
 
-uint32_t Paraboloid::toGPU(Metadata* meta, void* data) const {
-	Severe("Paraboloid not implemented on GPU");
-	return 0;
-}
-
-
 Paraboloid *CreateParaboloidShape(const Transform *o2w, const Transform *w2o,
         bool reverseOrientation, const ParamSet &params) {
     float radius = params.FindOneFloat("radius", 1);

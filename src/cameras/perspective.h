@@ -51,6 +51,7 @@ public:
     float GenerateRay(const CameraSample &sample, Ray *) const;
     float GenerateRayDifferential(const CameraSample &sample,
                                   RayDifferential *ray) const;
+    GPUCamera toGPU() const;
 private:
     // PerspectiveCamera Private Data
     Vector dxCamera, dyCamera;

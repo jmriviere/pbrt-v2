@@ -154,7 +154,6 @@ void StratifiedSample1D(float *samp, int nSamples, RNG &rng,
     }
 }
 
-
 void StratifiedSample2D(float *samp, int nx, int ny, RNG &rng,
                         bool jitter) {
     float dx = 1.f / nx, dy = 1.f / ny;

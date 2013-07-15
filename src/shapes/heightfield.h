@@ -49,7 +49,6 @@ public:
     void Refine(vector<Reference<Shape> > &refined) const;
     BBox ObjectBound() const;
 
-    uint32_t toGPU(Metadata* meta, void* data) const;
 private:
     // Heightfield Private Data
     float *z;

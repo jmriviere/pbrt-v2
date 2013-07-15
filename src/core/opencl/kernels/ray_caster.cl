@@ -8,16 +8,7 @@
 #include "GPU.h"
 #include "ray_caster.h"
 #include "fresnel.h"
-
-float3 transform(float3 r, Transformation t) {
-	float3 ret;
-
-	ret.s0 = dot(t.m[0], (float4)(r, 1));
-	ret.s1 = dot(t.m[1], (float4)(r, 1));
-	ret.s2 = dot(t.m[2], (float4)(r, 1));
-
-	return ret;
-}
+#include "camera.h"
 
 bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global float* prims) {
 
@@ -25,7 +16,8 @@ bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global floa
 	sphere.radius = prims[m_sphere.offset];
 
 	Ray trans = ray;
-	trans.origin = transform(ray.origin, m_sphere.fromWorld);
+	trans.origin = transform_point(ray.origin, m_sphere.fromWorld);
+	trans.direction = transform_vect(ray.direction, m_sphere.fromWorld);
 
 	float A = dot(trans.direction, trans.direction);
 	float B = 2 * dot(trans.direction, trans.origin);
@@ -77,7 +69,6 @@ bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global floa
 	return true;
 }
 
-//A revoir
 bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float* prims, int nb_prims) {
 	float temp;
 	hit->t = 1e5;
@@ -145,7 +136,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 			continue;
 		}
 
-		if (i++ > 5) {
+		if (i++ > 3) {
 			if (rand < p) {
 				reflectance /= p;
 			}
@@ -155,14 +146,14 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		}
 
 		hitpoint = ray.origin + hit.t * ray.direction; // hitpoint in world space
-		float3 n = normalize(transform(hitpoint, meta_prims[hit.id].fromWorld));
+		float3 n = normalize(transform_point(hitpoint, meta_prims[hit.id].fromWorld));
 		ray.origin = hitpoint;
 
 
-		//switch (meta_prims[hit.id].mat) {
-		switch (hit.id) {
+		switch (meta_prims[hit.id].mat) {
+		//switch (hit.id) {
 		case 0:
-		//default:
+		default:
 			ray.direction = reflection(ray, n);
 			break;
 			/*case DIFF:
@@ -173,7 +164,6 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 				ray.direction = normalize((float3)(x, y, z));
 				break;*/
 		case REFR:
-		default:
 			float3 nl = dot(ray.direction, n) < 0 ? n : -n;
 			bool into = dot(n, nl) > 0;
 			float3 reflectiondir = reflection(ray, nl);
@@ -193,7 +183,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 			rand = u01_open_open_32_24(r.v[0]);
 
-			if (rand < P) {
+			if (rand < 0.5) {
 				reflectance *= Rp;
 				ray.direction = reflectiondir;
 			}
@@ -206,13 +196,52 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 	}
 }
 
-__kernel void ray_cast(__global float4* Ls, __global Ray* rays, int nb_prims, __global Metadata* meta_prims,
+__kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, int nb_prims, __global Metadata* meta_prims,
 					   __global float* prims, __global Metadata* meta_light, __read_only image2d_t env) {
 
-	// Index
-	int p = get_global_id(0);
+	int xPos = get_global_id(0);
+	int yPos = get_global_id(1);
 
-	Hit hit;
+	threefry4x32_key_t k = {{get_global_id(0), 0xdecafbad, 0xfacebead, 0x12345678}};
+	threefry4x32_ctr_t cc = {{get_global_id(1), 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};
+	threefry4x32_ctr_t r;
 
-	Ls[p] = radiance(env, rays[p], meta_prims, prims, nb_prims);
+	Color pixel = (Color)(0, 0, 0, 0);
+
+	float sample_x, sample_y;
+
+	spp = 1;
+
+	for (int i = 0; i < spp; i++) {
+		cc.v[0]++;
+		r = threefry4x32(cc, k);
+
+		float rand_x = u01_open_open_32_24(r.v[0]);
+		float rand_y = u01_open_open_32_24(r.v[1]);
+
+		//printf("%f, %f\n", rand_x, rand_y);
+
+		sample_x = ((float)xPos + rand_x);
+		sample_y = ((float)yPos + rand_y);
+
+		Ray ray = generate_ray(*cam, (float2)(xPos, yPos));
+
+		//printf("%d, %d -- dir: %v3f, orig: %v3f\n", x, y, ray.direction, ray.origin);
+
+		pixel += radiance(env, ray, meta_prims, prims, nb_prims);
+
+	}
+
+//	for (uint y = 0; y < 8; ++y) {
+//		for (uint x = 0; x < 8; ++x) {
+//			sample_x = (float)xPos + (x + 0.5) * 0.8;
+//			sample_y = (float)yPos + (y + 0.5) * 0.8;
+//
+//			Ray ray = generate_ray(*cam, (float2)(sample_x, sample_y));
+//			pixel += radiance(env, ray, meta_prims, prims, nb_prims);
+//		}
+//	}
+
+	Ls[yPos * 800 + xPos] = pixel;
+
 }

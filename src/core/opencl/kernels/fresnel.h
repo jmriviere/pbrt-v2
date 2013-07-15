@@ -15,7 +15,7 @@
 #define Kr 0.99
 
 inline float3 reflection(Ray ray, float3 n) {
-  return (ray.direction - 2 * dot(ray.direction, n) * n);
+  return normalize((ray.direction - 2 * dot(ray.direction, n) * n));
 }
 
 inline float3 refraction(Ray ray, float3 n, float eta1Overeta2) {

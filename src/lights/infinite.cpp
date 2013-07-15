@@ -104,21 +104,6 @@ InfiniteAreaLight::InfiniteAreaLight(const Transform &light2world,
     // Compute sampling distributions for rows and columns of image
     distribution = new Distribution2D(img, width, height);
     delete[] img;
-
-    for(int i = 0; i < 4; ++i) {
-    	for (int j =0; j < 4; ++j) {
-    		std::cout << LightToWorld.GetMatrix().m[i][j] << " ";
-    	}
-    	std::cout << std::endl;
-    }
-    std::cout << "\n\n";
-
-    for(int i = 0; i < 4; ++i) {
-    	for (int j =0; j < 4; ++j) {
-    		std::cout << WorldToLight.GetMatrix().m[i][j] << " ";
-    	}
-    	std::cout << std::endl;
-    }
 }
 
 

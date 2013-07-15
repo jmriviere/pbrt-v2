@@ -59,7 +59,6 @@ public:
     Spectrum Sample_L(const Scene *scene, const LightSample &ls, float u1, float u2,
         float time, Ray *ray, Normal *Ns, float *pdf) const;
 
-    size_t toGPU(Metadata* meta, void* data) const;
 protected:
     // DiffuseAreaLight Protected Data
     Spectrum Lemit;

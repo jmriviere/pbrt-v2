@@ -40,6 +40,7 @@
 #include "pbrt.h"
 #include "geometry.h"
 #include "transform.h"
+#include "util.h"
 
 // Camera Declarations
 class Camera {
@@ -51,6 +52,7 @@ public:
     virtual float GenerateRay(const CameraSample &sample,
                               Ray *ray) const = 0;
     virtual float GenerateRayDifferential(const CameraSample &sample, RayDifferential *rd) const;
+    virtual GPUCamera toGPU() const;
 
     // Camera Public Data
     AnimatedTransform CameraToWorld;

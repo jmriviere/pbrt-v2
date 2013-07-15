@@ -211,9 +211,3 @@ Point Cylinder::Sample(float u1, float u2, Normal *Ns) const {
     return (*ObjectToWorld)(p);
 }
 
-uint32_t Cylinder::toGPU(Metadata* meta, void* data) const {
-	Severe("Cylinder not implemented for GPU");
-	return 0;
-}
-
-

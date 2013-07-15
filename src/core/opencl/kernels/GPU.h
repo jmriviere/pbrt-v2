@@ -64,4 +64,29 @@ typedef struct Hit {
 
 typedef float4 Color;
 
+float3 transform_vect(float3 r, Transformation t) {
+	float3 ret;
+
+	ret.s0 = dot(t.m[0], (float4)(r, 0));
+	ret.s1 = dot(t.m[1], (float4)(r, 0));
+	ret.s2 = dot(t.m[2], (float4)(r, 0));
+
+	return ret;
+}
+
+float3 transform_point(float3 r, Transformation t) {
+	float3 ret;
+
+	ret.s0 = dot(t.m[0], (float4)(r, 1));
+	ret.s1 = dot(t.m[1], (float4)(r, 1));
+	ret.s2 = dot(t.m[2], (float4)(r, 1));
+	float w = dot(t.m[3], (float4)(r, 1));
+
+	if (w != 1) {
+		ret /= w;
+	}
+
+	return ret;
+}
+
 #endif /* GPU_H_ */

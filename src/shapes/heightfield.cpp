@@ -111,11 +111,6 @@ void Heightfield::Refine(vector<Reference<Shape> > &refined) const {
     delete[] verts;
 }
 
-uint32_t Heightfield::toGPU(Metadata* meta, void* data) const {
-	Severe("Heightfield not implemented for GPU");
-	return 0;
-}
-
 Heightfield *CreateHeightfieldShape(const Transform *o2w, const Transform *w2o,
         bool reverseOrientation, const ParamSet &params) {
     int nu = params.FindOneInt("nu", -1);

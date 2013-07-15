@@ -206,12 +206,6 @@ float Cone::Area() const {
         phiMax / 2.f;
 }
 
-uint32_t Cone::toGPU(Metadata* meta, void* data) const {
-	Severe("Cone not implemented for GPU");
-	return 0;
-}
-
-
 Cone *CreateConeShape(const Transform *o2w, const Transform *w2o,
         bool reverseOrientation, const ParamSet &params) {
     float radius = params.FindOneFloat("radius", 1);

@@ -57,7 +57,6 @@ public:
     bool CanIntersect() const { return false; }
     void Refine(vector<Reference<Shape> > &refined) const;
 
-    uint32_t toGPU(Metadata* meta, void* data) const;
 private:
     // NURBS Data
     int nu, uorder, nv, vorder;
