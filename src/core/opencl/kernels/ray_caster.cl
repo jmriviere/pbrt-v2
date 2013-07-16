@@ -150,12 +150,11 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		ray.origin = hitpoint;
 
 
-		switch (meta_prims[hit.id].mat) {
-		//switch (hit.id) {
-		case 0:
-		default:
-			ray.direction = reflection(ray, n);
-			break;
+		//switch (meta_prims[hit.id].mat) {
+		switch (hit.id) {
+//		case 0:
+//			ray.direction = reflection(ray, n);
+//			break;
 			/*case DIFF:
 			//default:
 				float x = cos(2.f * M_PI * rand) * sqrt(1 - rand * rand);
@@ -164,6 +163,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 				ray.direction = normalize((float3)(x, y, z));
 				break;*/
 		case REFR:
+		default:
 			float3 nl = dot(ray.direction, n) < 0 ? n : -n;
 			bool into = dot(n, nl) > 0;
 			float3 reflectiondir = reflection(ray, nl);
@@ -209,6 +209,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 	Color pixel = (Color)(0, 0, 0, 0);
 
 	float sample_x, sample_y;
+	float rand_x, rand_y;
 
 	spp = 1;
 
@@ -216,8 +217,8 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 		cc.v[0]++;
 		r = threefry4x32(cc, k);
 
-		float rand_x = u01_open_open_32_24(r.v[0]);
-		float rand_y = u01_open_open_32_24(r.v[1]);
+		rand_x = u01_open_open_32_24(r.v[0]);
+		rand_y = u01_open_open_32_24(r.v[1]);
 
 		//printf("%f, %f\n", rand_x, rand_y);
 
