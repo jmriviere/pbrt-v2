@@ -9,23 +9,14 @@
 #include "ray_caster.h"
 #include "fresnel.h"
 
-float3 transform(float3 r, Transformation t) {
-	float3 ret;
-
-	ret.s0 = dot(t.m[0], (float4)(r, 1));
-	ret.s1 = dot(t.m[1], (float4)(r, 1));
-	ret.s2 = dot(t.m[2], (float4)(r, 1));
-
-	return ret;
-}
-
 bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global float* prims) {
 
 	Sphere sphere;
 	sphere.radius = prims[m_sphere.offset];
 
 	Ray trans = ray;
-	trans.origin = transform(ray.origin, m_sphere.fromWorld);
+	trans.origin = transform_point(ray.origin, m_sphere.fromWorld);
+	trans.direction = transform_vect(ray.direction, m_sphere.fromWorld);
 
 	float A = dot(trans.direction, trans.direction);
 	float B = 2 * dot(trans.direction, trans.origin);
@@ -140,11 +131,6 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 		float p = min(0.5f, reflectance.s1);
 
-		if (hit.t < 1e-2) {
-			ray.origin += 1e-2 * ray.direction;
-			continue;
-		}
-
 		if (i++ > 5) {
 			if (rand < p) {
 				reflectance /= p;
@@ -154,15 +140,19 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 			}
 		}
 
+		if (hit.t < 1e-2) {
+			ray.origin += 1e-2 * ray.direction;
+			continue;
+		}
+
 		hitpoint = ray.origin + hit.t * ray.direction; // hitpoint in world space
-		float3 n = normalize(transform(hitpoint, meta_prims[hit.id].fromWorld));
+		float3 n = normalize(transform_point(hitpoint, meta_prims[hit.id].fromWorld));
 		ray.origin = hitpoint;
 
 
 		//switch (meta_prims[hit.id].mat) {
 		switch (hit.id) {
 		case 0:
-		//default:
 			ray.direction = reflection(ray, n);
 			break;
 			/*case DIFF:
@@ -172,8 +162,8 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 				float z = rand;
 				ray.direction = normalize((float3)(x, y, z));
 				break;*/
-		case REFR:
-		default:
+		//case REFR:
+		case 1:
 			float3 nl = dot(ray.direction, n) < 0 ? n : -n;
 			bool into = dot(n, nl) > 0;
 			float3 reflectiondir = reflection(ray, nl);
@@ -201,6 +191,35 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 				reflectance *= Tp;
 				ray.direction = transmissiondir;
 			}
+			break;
+		default:
+			float eps1 = u01_open_open_32_24(r.v[0]);
+			float eps2 = u01_open_open_32_24(r.v[1]);
+
+			float theta = acos(sqrt(1.0 - eps1));
+			float phi = 2.0 * M_PI * eps2;
+
+			float xs = sin(theta) * cos(phi);
+			float ys = sin(theta) * sin(phi);
+			float zs = cos(theta);
+
+			float3 h = n;
+
+			if (fabs(h.x) <= fabs(h.y) && fabs(h.x) <= fabs(h.z)) {
+				h.x = 1.0;
+			}
+			else if (fabs(h.y) <= fabs(h.x) && fabs(h.y) <= fabs(h.z)) {
+				h.y = 1.0;
+			}
+			else {
+				h.z = 1.0;
+			}
+
+			float3 x = normalize(cross(h, n));
+			float3 y = normalize(cross(x, n));
+
+			ray.direction = (float3)normalize(xs * x + ys * y + zs * n);
+			//reflectance *= M_PI / (cos(theta) * sin(theta));
 			break;
 		}
 	}
