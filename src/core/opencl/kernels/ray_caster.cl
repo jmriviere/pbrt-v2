@@ -104,13 +104,13 @@ Color lookup(image2d_t env, Metadata meta_env, Ray ray) {
 }
 
 Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global float* prims,
-			   int nb_prims) {
+			   int nb_prims, threefry4x32_ctr_t cc, threefry4x32_key_t k) {
 
 	Color reflectance = (Color)(1, 1, 1, 1);
 	Color cl = (Color)(0,0,0,0);
 
-	threefry4x32_key_t k = {{get_global_id(0), 0xdecafbad, 0xfacebead, 0x12345678}};
-	threefry4x32_ctr_t cc = {{0, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};
+/*	threefry4x32_key_t k = {{get_global_id(0), 0xdecafbad, 0xfacebead, 0x12345678}};
+	threefry4x32_ctr_t cc = {{0, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};*/
 	threefry4x32_ctr_t r;
 
 	Hit hit;
@@ -183,7 +183,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 			rand = u01_open_open_32_24(r.v[0]);
 
-			if (rand < 0.5) {
+			if (rand < 0.5f) {
 				reflectance *= Rp;
 				ray.direction = reflectiondir;
 			}
@@ -206,30 +206,30 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 	threefry4x32_ctr_t cc = {{get_global_id(1), 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};
 	threefry4x32_ctr_t r;
 
-	Color pixel = (Color)(0, 0, 0, 0);
 
 	float sample_x, sample_y;
 	float rand_x, rand_y;
 
-	spp = 1;
+	Color pixel = (Color)(0, 0, 0, 0);
+
+	spp = 16;
 
 	for (int i = 0; i < spp; i++) {
 		cc.v[0]++;
 		r = threefry4x32(cc, k);
 
-		rand_x = u01_open_open_32_24(r.v[0]);
-		rand_y = u01_open_open_32_24(r.v[1]);
+		rand_x = u01_open_open_32_24(r.v[0]) - 0.5f;
+		rand_y = u01_open_open_32_24(r.v[1]) - 0.5f;
 
-		//printf("%f, %f\n", rand_x, rand_y);
 
 		sample_x = ((float)xPos + rand_x);
 		sample_y = ((float)yPos + rand_y);
 
-		Ray ray = generate_ray(*cam, (float2)(xPos, yPos));
+		Ray ray = generate_ray(*cam, (float2)(sample_x, sample_y));
 
 		//printf("%d, %d -- dir: %v3f, orig: %v3f\n", x, y, ray.direction, ray.origin);
 
-		pixel += radiance(env, ray, meta_prims, prims, nb_prims);
+		pixel += radiance(env, ray, meta_prims, prims, nb_prims, cc, k);
 
 	}
 
@@ -243,6 +243,6 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 //		}
 //	}
 
-	Ls[yPos * 800 + xPos] = pixel;
+	Ls[yPos * 800 + xPos] = pixel/spp;
 
 }

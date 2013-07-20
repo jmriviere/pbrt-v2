@@ -9,8 +9,8 @@ Film "image" "integer xresolution" [800] "integer yresolution" [400]
 SurfaceIntegrator "path" "integer maxdepth" [3]
 "string strategy" "all"
 
-#Sampler "stratified" "integer pixelsamples" [1024]
-Sampler "stratified" "integer xsamples" [1] "integer ysamples" [1]
+Sampler "lowdiscrepancy" "integer pixelsamples" [16]
+#Sampler "stratified" "integer xsamples" [1] "integer ysamples" [1]
 PixelFilter "box"
 
 WorldBegin
@@ -31,7 +31,7 @@ AttributeEnd
 
 AttributeBegin
 Translate 0 0 0
-Material "mirror"
+Material "glass"
 Shape "sphere" "float radius" [.5]
 AttributeEnd
 

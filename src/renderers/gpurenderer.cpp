@@ -195,6 +195,8 @@ void GpuRenderer::Render(const Scene *scene) {
     	std::cout << "ErrRead " << kepasa << std::endl;
     }
 
+    srand(time(NULL));
+
     float v[3];
 
     int j = 0;

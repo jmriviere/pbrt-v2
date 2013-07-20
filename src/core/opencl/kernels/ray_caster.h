@@ -15,7 +15,7 @@ bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global floa
 bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float* prims, int nb_prims);
 Color lookup(image2d_t env, Metadata meta_env, Ray ray);
 Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global float* prims,
-			   int nb_prims);
+	       int nb_prims, threefry4x32_ctr_t cc, threefry4x32_key_t k);
 
 
 #endif /* RAY_CASTER_H_ */
