@@ -118,6 +118,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 	while(true) {
 		rng->c.v[0]++;
+		rng->c.v[1]++;
 		r = threefry4x32(rng->c, rng->k);
 
 		float rand = u01_open_open_32_24(r.v[0]);
@@ -212,7 +213,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 	Color pixel = (Color)(0, 0, 0, 0);
 
-	spp = 32;
+	spp = 1024;
 
 	for (int i = 0; i < spp; i++) {
 		rng.c.v[0]++;
