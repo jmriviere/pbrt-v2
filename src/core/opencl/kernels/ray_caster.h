@@ -13,7 +13,7 @@
 
 bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global float* prims);
 bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float* prims, int nb_prims);
-Color lookup(image2d_t env, Metadata meta_env, Ray ray);
+Color lookup(image2d_t env, Ray ray);
 Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global float* prims,
 	       int nb_prims, RNG* rng);
 

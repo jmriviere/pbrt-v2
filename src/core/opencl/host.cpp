@@ -13,7 +13,7 @@
 
 using namespace std;
 
-LoggerPtr logger(Logger::getLogger(__FILE__));
+static LoggerPtr logger(Logger::getLogger(__FILE__));
 
 Host::~Host() {
 	delete _context;

@@ -73,7 +73,7 @@ bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float*
 	float temp;
 	hit->t = 1e5;
 
-	for (uint i = 0; i < nb_prims; ++i) {
+	for (uint i = 0; i < nb_prims - 1; ++i) {
 		switch (meta_prims[i].type) {
 		case sphere:
 			temp = hit->t;
@@ -92,7 +92,7 @@ bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float*
 }
 
 
-Color lookup(image2d_t env, Metadata meta_env, Ray ray) {
+Color lookup(image2d_t env, Ray ray) {
 	float3 dir = normalize(ray.direction);
 	dir.s2 = (dir.s2 > 1.f ? 1.f : (dir.s2 < -1.f ? -1.f : dir.s2));
 	float theta = acos(dir.s2);
@@ -123,7 +123,8 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		float rand = u01_open_open_32_24(r.v[0]);
 
 		if (!intersect(&hit, ray, meta_prims, prims, nb_prims)) {
-			cl += reflectance * lookup(env, meta_prims[hit.id], ray);
+			ray.direction = transform_vect(ray.direction, meta_prims[nb_prims - 1].fromWorld);
+			cl += reflectance * lookup(env, ray);
 			return cl;
 		}
 
@@ -190,7 +191,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 }
 
 __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, int nb_prims, __global Metadata* meta_prims,
-					   __global float* prims, __global Metadata* meta_light, __read_only image2d_t env) {
+					   __global float* prims, __read_only image2d_t env) {
 
 	int xPos = get_global_id(0);
 	int yPos = get_global_id(1);
