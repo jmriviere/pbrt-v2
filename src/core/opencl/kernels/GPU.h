@@ -12,6 +12,8 @@
 #define M_PI           3.14159265358979323846
 #endif
 
+#include "Random123/threefry.h"
+#include "Random123/u01.h"
 
 #define OFFSETOF(type, field)    ((unsigned long) &(((type *) 0)->field))
 
@@ -57,10 +59,15 @@ typedef struct s_sphere {
 	float radius;
 } Sphere;
 
-typedef struct Hit {
+typedef struct s_hit {
 	int id;
 	float t;
 } Hit;
+
+typedef struct s_rng {
+	threefry4x32_key_t k;
+	threefry4x32_ctr_t c;
+} RNG;
 
 typedef float4 Color;
 

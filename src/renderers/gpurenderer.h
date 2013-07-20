@@ -14,11 +14,6 @@
 #include "renderer.h"
 #include "shapes/sphere.h"
 
-/*
- * These structures hold data about rays and spheres to be passed to the GPU.
- * The dummy fields are present to account for memory alignment on the GPU.
- * */
-
 // SamplerRenderer Declarations
 class GpuRenderer : public Renderer {
 public:
@@ -34,15 +29,11 @@ public:
 private:
     // SamplerRenderer Private Data
     bool visualizeObjectIds;
-    Sampler *sampler;
     Camera *camera;
 
     std::vector<Metadata> meta_primitives;
     std::vector<float> primitives;
 };
-
-static std::vector<gpu_Ray> generateGpuRays(Sampler* sampler, const Scene* scene,
-									   const Camera* camera, std::vector<std::pair<size_t, Sample*> >& samples);
 
 //GpuRenderer *CreateGpuRenderer(const ParamSet &params, Camera *camera);
 
