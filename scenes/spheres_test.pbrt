@@ -9,7 +9,7 @@ Film "image" "integer xresolution" [800] "integer yresolution" [400]
 SurfaceIntegrator "path" "integer maxdepth" [3]
 "string strategy" "all"
 
-Sampler "lowdiscrepancy" "integer pixelsamples" [1024]
+Sampler "lowdiscrepancy" "integer pixelsamples" [64]
 #Sampler "stratified" "integer xsamples" [1] "integer ysamples" [1]
 PixelFilter "box"
 
@@ -23,14 +23,14 @@ LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
 AttributeEnd
 
 AttributeBegin
-Translate -1 -3 0
+Translate -1 0 0
 Material "mirror"
 Shape "sphere" "float radius" [.5]
 AttributeEnd
 
 
 AttributeBegin
-Translate 0 0 -0.5
+Translate 1 0 0
 Material "glass"
 Shape "sphere" "float radius" [.5]
 AttributeEnd

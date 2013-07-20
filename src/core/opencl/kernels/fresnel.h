@@ -15,11 +15,11 @@
 #define Kr 0.99
 
 inline float3 reflection(Ray ray, float3 n) {
-  return normalize((ray.direction - 2 * dot(ray.direction, n) * n));
+	return normalize((ray.direction - 2 * dot(ray.direction, n) * n));
 }
 
 inline float3 refraction(Color* reflectance, Ray ray, float3 n, RNG* rng) {
-	rng->c.v[0]++;
+	//rng->c.v[0]++;
 	threefry4x32_ctr_t r = threefry4x32(rng->c, rng->k);
 
 	float3 n_real = dot(ray.direction, n) < 0 ? n : -n;
@@ -32,36 +32,26 @@ inline float3 refraction(Color* reflectance, Ray ray, float3 n, RNG* rng) {
 		return reflection(ray, n_real);
 	}
 
-	float3 transdir = normalize(eta1Overeta2 * ray.direction - n_real * (eta1Overeta2 * cosi + sqrt(cos2t)));
+	float3 transdir = normalize(eta1Overeta2 * ray.direction - n_real *
+			(eta1Overeta2 * cosi + sqrt(cos2t)));
 
-	float a= ETA_GLASS-ETA_VACUUM, b=ETA_VACUUM+ETA_GLASS, R0=a*a/(b*b), c = 1-(outside?-cosi:dot(n, transdir));
-	float Re = R0 + (1-R0) * c * c * c * c * c; //Rpercent(ray, n, nc, nt);
-	float Tr = 1.f-Re, P = 0.25 + 0.5 * Re, Rp = Re/P, Tp = Tr/(1-P);
+	float num = ETA_GLASS-ETA_VACUUM;
+	float denom = ETA_VACUUM + ETA_GLASS;
+	float R0 = num * num/(denom * denom);
+	float cost = 1-(outside?-cosi:dot(n, transdir));
+	float Re = R0 + (1-R0) * cost * cost * cost * cost * cost; // Schlick's approximation
+	float Tr = 1.f-Re;
 
-	if (u01_open_open_32_24(r.v[0]) < 0.5f) {
-		*reflectance *= Rp;
+	float rand = u01_open_open_32_24(r.v[1]);
+
+	if (rand <= 0.5) {
+		*reflectance *= 2.f * Re;
 		return reflection(ray, n_real);
 	}
 	else {
-		*reflectance *= Tp;
+		*reflectance *= 2.f * Tr;
 		return transdir;
 	}
 }
-
-static inline float Rs(Ray ray, float3 n, float eta1, float eta2) {
-	float cost = dot(ray.direction, n);
-	float sint = sqrt(1 - cost * cost);
-	float val = eta1/eta2 * sint;
-	return pow((eta1 * cost - eta2 * sqrt(1 - val * val)) / (eta1 * cost + eta2 * sqrt(1 - val * val)), 2);
-}
-
-static inline float Rp(Ray ray, float3 n, float eta1, float eta2) {
-	float cost = dot(ray.direction, n);
-	float sint = sqrt(1 - cost * cost);
-	float val = eta1/eta2 * sint;
-	return pow((eta2 * sqrt(1 - val * val) - eta1 * cost) / (eta1 * cost + eta2 * sqrt(1 - val * val)), 2);
-}
-
-float Rpercent(Ray ray, float3 n, float eta1, float eta2);
 
 #endif /* FRESNEL_H_ */

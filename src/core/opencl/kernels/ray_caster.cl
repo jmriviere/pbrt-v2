@@ -214,7 +214,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 	spp = 32;
 
 	for (int i = 0; i < spp; i++) {
-		rng.c.v[1]++;
+		rng.c.v[0]++;
 		r = threefry4x32(rng.c , rng.k);
 
 		rand_x = u01_open_open_32_24(r.v[0]) - 0.5f;
