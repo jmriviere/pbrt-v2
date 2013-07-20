@@ -89,8 +89,8 @@ void GpuRenderer::Render(const Scene *scene) {
 			cl::ImageFormat(CL_RGBA, CL_FLOAT), env_w, env_h, 0, env, &err);
 
 	if (CL_SUCCESS != err) {
-		LOG(logger, ERROR, "Error creating the image from the envmap: " << err << "in file "
-				<< __FILE__ << " at line " << __LINE__);
+		LOG(logger, ERROR, "Error creating the image from the envmap: " << err
+				<< " at line " << __LINE__);
 	}
 
 	cl::size_t<3> origin;
@@ -107,24 +107,22 @@ void GpuRenderer::Render(const Scene *scene) {
 			env, NULL, NULL);
 
 	if (CL_SUCCESS != err) {
-		LOG(logger, ERROR, "Error writing the envmap to device memory: " << err << " in file "
-				<< __FILE__ << " at line " << __LINE__);
+		LOG(logger, ERROR, "Error writing the envmap to device memory: " << err
+				<< " at line " << __LINE__);
 	}
 
 	cl::Buffer bufLs(*(Host::instance())._context, CL_MEM_WRITE_ONLY,
 			4 * nPixels * sizeof(float), NULL, &err);
 
 	if (CL_SUCCESS != err) {
-		LOG(logger, ERROR, "Error creating the output buffer: " << err << " in file "
-						<< __FILE__ << " at line " << __LINE__);
+		LOG(logger, ERROR, "Error creating the output buffer: " << err << " at line " << __LINE__);
 	}
 
 	cl::Buffer bufCam(*(Host::instance())._context, CL_MEM_READ_ONLY,
 			sizeof(GPUCamera), NULL, &err);
 
 	if (CL_SUCCESS != err) {
-		LOG(logger, ERROR, "Error creating the camera buffer: " << err << " in file "
-						<< __FILE__ << " at line " << __LINE__);
+		LOG(logger, ERROR, "Error creating the camera buffer: " << err << " at line " << __LINE__);
 	}
 
 	err = Host::instance()._queue->enqueueWriteBuffer(bufCam, CL_TRUE, 0,
@@ -132,8 +130,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error writing the camera buffer to device memory: "
-				<< err << " in file "
-				<< __FILE__ << " at line " << __LINE__);
+				<< err << " at line " << __LINE__);
 	}
 
 	cl::Buffer buf_prims(*(Host::instance())._context, CL_MEM_READ_ONLY,
@@ -141,8 +138,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error creating the raw data buffer: "
-				<< err << " in file "
-				<< __FILE__ << " at line " << __LINE__);
+				<< err << " at line " << __LINE__);
 	}
 
 	err = Host::instance()._queue->enqueueWriteBuffer(buf_prims, CL_TRUE, 0,
@@ -151,8 +147,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error writing the raw data buffer to device memory: "
-				<< err << " in file "
-				<< __FILE__ << " at line " << __LINE__);
+				<< err << " at line " << __LINE__);
 	}
 
 	cl::Buffer buf_mprims(*(Host::instance())._context, CL_MEM_READ_ONLY,
@@ -160,8 +155,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error creating the metadata buffer: "
-				<< err << " in file "
-				<< __FILE__ << " at line " << __LINE__);
+				<< err << " at line " << __LINE__);
 	}
 
 	err = Host::instance()._queue->enqueueWriteBuffer(buf_mprims, CL_TRUE, 0,
@@ -170,8 +164,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error writing the metadata buffer to device memory: "
-				<< err << " in file "
-				<< __FILE__ << " at line " << __LINE__);
+				<< err << " at line " << __LINE__);
 	}
 
 	k.setArg(0, bufLs);
@@ -187,7 +180,8 @@ void GpuRenderer::Render(const Scene *scene) {
 			cl::NullRange, NULL, &ev);
 
 	if (CL_SUCCESS != err) {
-		std::cout << "ErrND " << err << std::endl;
+		LOG(logger, ERROR, "Error calling the kernel: "
+				<< err << " at line " << __LINE__);
 	}
 
 	ev.wait();
@@ -196,7 +190,8 @@ void GpuRenderer::Render(const Scene *scene) {
 			4 * nPixels * sizeof(float), Ls, NULL, NULL);
 
 	if (CL_SUCCESS != err) {
-		std::cout << "ErrRead " << err << std::endl;
+		LOG(logger, ERROR, "Error reading back from device: "
+				<< err << " at line " << __LINE__);
 	}
 
 	float v[3];
