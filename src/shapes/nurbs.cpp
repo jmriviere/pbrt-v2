@@ -303,12 +303,6 @@ void NURBS::Refine(vector<Reference<Shape> > &refined) const {
     delete[] vertices;
 }
 
-uint32_t NURBS::toGPU(Metadata* meta, void* data) const {
-	Severe("NURBS not implemented for GPU");
-	return 0;
-}
-
-
 NURBS *CreateNURBSShape(const Transform *o2w, const Transform *w2o,
         bool ReverseOrientation, const ParamSet &params) {
     int nu = params.FindOneInt("nu", -1);

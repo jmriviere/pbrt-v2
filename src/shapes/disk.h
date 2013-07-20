@@ -52,7 +52,6 @@ public:
     float Area() const;
     Point Sample(float u1, float u2, Normal *Ns) const;
 
-    uint32_t toGPU(Metadata* meta, void* data) const;
 private:
     // Disk Private Data
     float height, radius, innerRadius, phiMax;

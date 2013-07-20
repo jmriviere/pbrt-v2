@@ -491,11 +491,6 @@ Point LoopSubdiv::weightBoundary(SDVertex *vert, float beta) {
     return P;
 }
 
-uint32_t LoopSubdiv::toGPU(Metadata* meta, void* data) const {
-	Severe("Loops not implemented for GPU");
-}
-
-
 LoopSubdiv *CreateLoopSubdivShape(const Transform *o2w, const Transform *w2o,
         bool reverseOrientation, const ParamSet &params) {
     int nlevels = params.FindOneInt("nlevels", 3);

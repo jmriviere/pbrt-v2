@@ -1,15 +1,16 @@
 LookAt 0 10 -3   0 0 -1   0 1 -1
 Camera "perspective" "float fov" [22]
 
-#Renderer "gpu"
+Renderer "gpu"
 
 Film "image" "integer xresolution" [800] "integer yresolution" [400]
-"string filename" "pbrt.exr"
+"string filename" "gpu.exr"
 
 SurfaceIntegrator "path" "integer maxdepth" [3]
 "string strategy" "all"
 
-Sampler "lowdiscrepancy" "integer pixelsamples" [1]
+Sampler "lowdiscrepancy" "integer pixelsamples" [16]
+#Sampler "stratified" "integer xsamples" [1] "integer ysamples" [1]
 PixelFilter "box"
 
 WorldBegin
@@ -22,7 +23,7 @@ LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
 AttributeEnd
 
 AttributeBegin
-Translate 1 0 -0.5
+Translate -1 -3 0
 Material "mirror"
 Shape "sphere" "float radius" [.5]
 AttributeEnd

@@ -54,7 +54,6 @@ public:
     BBox ObjectBound() const;
     BBox WorldBound() const;
 
-    uint32_t toGPU(Metadata* meta, void* data) const;
 private:
     // LoopSubdiv Private Methods
     static float beta(int valence) {

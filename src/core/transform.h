@@ -316,10 +316,13 @@ public:
     Ray operator()(const Ray &r) const;
     BBox MotionBounds(const BBox &b, bool useInverse) const;
     bool HasScale() const { return startTransform->HasScale() || endTransform->HasScale(); }
+
+    const Transform *startTransform, *endTransform;
+
 private:
     // AnimatedTransform Private Data
     const float startTime, endTime;
-    const Transform *startTransform, *endTransform;
+
     const bool actuallyAnimated;
     Vector T[2];
     Quaternion R[2];

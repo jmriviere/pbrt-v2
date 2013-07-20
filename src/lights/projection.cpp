@@ -133,9 +133,4 @@ float ProjectionLight::Pdf(const Point &, const Vector &) const {
     return 0.;
 }
 
-size_t ProjectionLight::toGPU(Metadata* meta, void* data) const {
-	Severe("Projection Light not implemented for GPU");
-	return 0;
-}
-
 

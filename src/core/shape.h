@@ -78,7 +78,7 @@ public:
     virtual float Pdf(const Point &p, const Vector &wi) const;
 
     // Convert a shape to a struct to be copied to GPU.
-    virtual uint32_t toGPU(Metadata* meta, void* data) const = 0;
+    virtual uint32_t toGPU(Metadata* meta, void* data) const;
 
     // Shape Public Data
     const Transform *ObjectToWorld, *WorldToObject;

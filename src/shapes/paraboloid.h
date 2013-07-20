@@ -51,7 +51,6 @@ public:
     bool IntersectP(const Ray &ray) const;
     float Area() const;
 
-    uint32_t toGPU(Metadata* meta, void* data) const;
 protected:
     // Paraboloid Private Data
     float radius;

@@ -106,9 +106,4 @@ void PointLight::SHProject(const Point &p, float pEpsilon, int lmax,
         coeffs[i] = Li * Ylm[i];
 }
 
-size_t PointLight::toGPU(Metadata* meta, void* data) const {
-	Severe("Point lights not implemented for GPU");
-	return 0;
-}
-
 

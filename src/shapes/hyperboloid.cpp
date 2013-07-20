@@ -253,11 +253,6 @@ float Hyperboloid::Area() const {
               2.f*p1.z*p2.z - p2.z*p2.z));
 }
 
-uint32_t Hyperboloid::toGPU(Metadata* meta, void* data) const {
-	Severe("Hyperboloid not implemented for GPU");
-	return 0;
-}
-
 #undef SQR
 #undef QUAD
 Shape *CreateHyperboloidShape(const Transform *o2w, const Transform *w2o,

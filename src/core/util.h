@@ -55,6 +55,11 @@ typedef struct s_metadata {
 	};
 } Metadata;
 
+typedef struct s_camera {
+	float r2c[16];
+	float c2w[16];
+} GPUCamera;
+
 #pragma pack(pop)
 
 typedef struct s_sphere {

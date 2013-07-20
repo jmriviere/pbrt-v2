@@ -98,4 +98,7 @@ float Shape::Pdf(const Point &p, const Vector &wi) const {
     return pdf;
 }
 
+uint32_t Shape::toGPU(Metadata* meta, void* data) const {
+	Severe("Shape not supported for GPU computation");
+}
 

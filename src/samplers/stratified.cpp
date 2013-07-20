@@ -64,6 +64,7 @@ Sampler *StratifiedSampler::GetSubSampler(int num, int count) {
         yPixelSamples, jitterSamples, shutterOpen, shutterClose);
 }
 
+#include <iostream>
 
 int StratifiedSampler::GetMoreSamples(Sample *samples, RNG &rng) {
     if (yPos == yPixelEnd) return 0;
@@ -75,6 +76,7 @@ int StratifiedSampler::GetMoreSamples(Sample *samples, RNG &rng) {
     float *imageSamples = bufp; bufp += 2 * nSamples;
     float *lensSamples = bufp;  bufp += 2 * nSamples;
     float *timeSamples = bufp;
+
     StratifiedSample2D(imageSamples, xPixelSamples, yPixelSamples, rng,
                        jitterSamples);
     StratifiedSample2D(lensSamples, xPixelSamples, yPixelSamples, rng,
@@ -117,7 +119,7 @@ int StratifiedSampler::GetMoreSamples(Sample *samples, RNG &rng) {
 
 StratifiedSampler *CreateStratifiedSampler(const ParamSet &params, const Film *film,
          const Camera *camera) {
-    bool jitter = params.FindOneBool("jitter", true);
+    bool jitter = params.FindOneBool("jitter", false);
     // Initialize common sampler parameters
     int xstart, xend, ystart, yend;
     film->GetSampleExtent(&xstart, &xend, &ystart, &yend);

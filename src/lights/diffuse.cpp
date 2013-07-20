@@ -100,9 +100,4 @@ Spectrum DiffuseAreaLight::Sample_L(const Scene *scene,
     return Ls;
 }
 
-size_t DiffuseAreaLight::toGPU(Metadata* meta, void* data) const {
-	Severe("Diffuse lights not implemented for GPU");
-	return 0;
-}
-
 

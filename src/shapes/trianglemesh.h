@@ -57,7 +57,6 @@ public:
     friend class Triangle;
     template <typename T> friend class VertexTexture;
 
-    uint32_t toGPU(Metadata* meta, void* data) const;
 protected:
     // TriangleMesh Protected Data
     int ntris, nverts;
@@ -106,7 +105,6 @@ public:
             DifferentialGeometry *dgShading) const;
     Point Sample(float u1, float u2, Normal *Ns) const;
 
-    uint32_t toGPU(Metadata* meta, void* data) const;
 private:
     // Triangle Private Data
     Reference<TriangleMesh> mesh;

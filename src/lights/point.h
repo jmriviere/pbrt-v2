@@ -56,7 +56,6 @@ public:
     void SHProject(const Point &p, float pEpsilon, int lmax, const Scene *scene,
         bool computeLightVisibility, float time, RNG &rng, Spectrum *coeffs) const;
 
-    size_t toGPU(Metadata* meta, void* data) const;
 private:
     // PointLight Private Data
     Point lightPos;

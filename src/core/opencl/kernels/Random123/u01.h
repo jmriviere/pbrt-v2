@@ -112,7 +112,8 @@ R123_CUDA_DEVICE R123_STATIC_INLINE float u01_open_open_32_24(uint32_t i){
     return (1+(i>>8))*R123_0x1fffffep_25f; /* 0x1.fffffep-25f; */
 }
 
-#if R123_USE_U01_DOUBLE
+//#if R123_USE_U01_DOUBLE
+#if 0
 /* narrowing conversions:  uint64_t to double */
 R123_CUDA_DEVICE R123_STATIC_INLINE double u01_closed_closed_64_53(uint64_t i){
     return i*R123_0x1p_64; /* 0x1.p-64; */

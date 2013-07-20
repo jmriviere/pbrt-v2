@@ -58,7 +58,6 @@ public:
             float time, Ray *ray, Normal *Ns, float *pdf) const;
     float Pdf(const Point &, const Vector &) const;
 
-    size_t toGPU(Metadata* meta, void* data) const;
 private:
     // ProjectionLight Private Data
     MIPMap<RGBSpectrum> *projectionMap;

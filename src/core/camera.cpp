@@ -101,4 +101,7 @@ ProjectiveCamera::ProjectiveCamera(const AnimatedTransform &cam2world,
     RasterToCamera = Inverse(CameraToScreen) * RasterToScreen;
 }
 
+GPUCamera Camera::toGPU() const {
+	Severe("Camera not supported for GPU computation -- Use a projective camera");
+}
 
