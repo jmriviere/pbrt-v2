@@ -199,8 +199,8 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 	RNG rng;
 
-	threefry4x32_key_t k = {{xPos, 0xdecafbad, 0xfacebead, 0x12345678}};;
-	threefry4x32_ctr_t c = {{yPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};;
+	threefry4x32_key_t k = {{yPos, 0xdecafbad, 0xfacebead, 0x12345678}};;
+	threefry4x32_ctr_t c = {{xPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};;
 
 	rng.k = k;
 	rng.c = c;
@@ -218,8 +218,8 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 	for (int i = 0; i < spp; i++) {
 		r = threefry4x32(rng.c , rng.k);
 
-		rand_x = u01_open_open_32_24(r.v[0]) - 0.5f;
-		rand_y = u01_open_open_32_24(r.v[1]) - 0.5f;
+		rand_x = u01_open_open_32_24(r.v[0]);
+		rand_y = u01_open_open_32_24(r.v[1]);
 
 
 		sample_x = ((float)xPos + rand_x);
