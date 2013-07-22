@@ -104,7 +104,7 @@ Color lookup(image2d_t env, Ray ray) {
 }
 
 Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global float* prims,
-			   int nb_prims, RNG* rng) {
+			   int nb_prims, RNG* rng, __global uint2* derp, int bla) {
 
 	Color reflectance = (Color)(1, 1, 1, 1);
 	Color cl = (Color)(0,0,0,0);
@@ -161,6 +161,10 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 			break;
 		default:
 			float eps1 = u01_open_open_32_24(r.v[0]);
+//			uint2 gaderp = derp[bla];
+//			float theta = (gaderp.s0/512.f) * M_PI;
+//			float phi = (gaderp.s1/1024.f) * 2 * M_PI;
+//			ray.direction = normalize((float3)( sin(theta) * cos(phi),sin(theta) * sin(phi),cos(theta)));
 			float eps2 = u01_open_open_32_24(r.v[1]);
 
 			float theta = acos(sqrt(1.0 - eps1));
@@ -192,15 +196,15 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 }
 
 __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, int nb_prims, __global Metadata* meta_prims,
-					   __global float* prims, __read_only image2d_t env) {
+					   __global float* prims, __read_only image2d_t env, __global uint2* derp) {
 
 	int xPos = get_global_id(0);
 	int yPos = get_global_id(1);
 
 	RNG rng;
 
-	threefry4x32_key_t k = {{xPos, 0xdecafbad, 0xfacebead, 0x12345678}};;
-	threefry4x32_ctr_t c = {{yPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};;
+	threefry4x32_key_t k = {{yPos, 0xdecafbad, 0xfacebead, 0x12345678}};;
+	threefry4x32_ctr_t c = {{xPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};;
 
 	rng.k = k;
 	rng.c = c;
@@ -213,14 +217,14 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 	Color pixel = (Color)(0, 0, 0, 0);
 
-	spp = 1024;
+	spp = 256;
 
 	for (int i = 0; i < spp; i++) {
-		rng.c.v[0]++;
+		//rng.c.v[0]++;
 		r = threefry4x32(rng.c , rng.k);
 
-		rand_x = u01_open_open_32_24(r.v[0]) - 0.5f;
-		rand_y = u01_open_open_32_24(r.v[1]) - 0.5f;
+		rand_x = u01_open_open_32_24(r.v[0]);
+		rand_y = u01_open_open_32_24(r.v[1]);
 
 
 		sample_x = ((float)xPos + rand_x);
@@ -228,7 +232,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 		Ray ray = generate_ray(*cam, (float2)(sample_x, sample_y));
 
-		pixel += radiance(env, ray, meta_prims, prims, nb_prims, &rng);
+		pixel += radiance(env, ray, meta_prims, prims, nb_prims, &rng, derp, i);
 
 	}
 

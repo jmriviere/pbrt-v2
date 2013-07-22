@@ -67,13 +67,13 @@ CXX=g++
 LD=$(CXX) $(OPT) $(MARCH)
 SRC=src
 TEST=$(SRC)/tests
-INCLUDE=-I$(SRC) -I$(SRC)/core -I$(SRC)/core/opencl $(EXR_INCLUDES) $(TIFF_INCLUDES) -I../
+INCLUDE=-I$(SRC) -std=c++0x -I$(SRC)/core -I$(SRC)/core/opencl -I$(SRC)/core/opencl/cw $(EXR_INCLUDES) $(TIFF_INCLUDES) -I../
 WARN=-Wall
 CWD=$(shell pwd)
 DEPS= -MM -MF $@.d
 CXXFLAGS=$(OPT) $(MARCH) $(INCLUDE) $(WARN) $(DEFS)
 CCFLAGS=$(CXXFLAGS)
-LIBS=$(LEXLIB) $(EXR_LIBDIR) $(EXRLIBS) -lm -lOpenCL -llog4cxx
+LIBS=$(LEXLIB) $(EXR_LIBDIR) $(EXRLIBS) -lm -lOpenCL -llog4cxx -fopenmp
 
 ifeq ($(DEBUG), 1)
 	CXXFLAGS += -DDEBUG -g -ggdb
@@ -85,6 +85,7 @@ LIB_CXXSRCS += $(wildcard $(SRC)/accelerators/*.cpp $(SRC)/cameras/*.cpp $(SRC)/
 LIB_CXXSRCS += $(wildcard $(SRC)/integrators/*.cpp $(SRC)/lights/*.cpp $(SRC)/materials/*.cpp $(SRC)/renderers/*.cpp )
 LIB_CXXSRCS += $(wildcard $(SRC)/samplers/*.cpp $(SRC)/shapes/*.cpp $(SRC)/textures/*.cpp $(SRC)/volumes/*.cpp)
 LIB_CXXSRCS += $(wildcard $(SRC)/core/opencl/*.cpp)
+LIB_CXXSRCS += $(wildcard $(SRC)/core/opencl/cw/*.cpp)
 
 LIBOBJS  = $(addprefix objs/, $(subst /,_,$(subst $(SRC)/,,$(LIB_CSRCS:.c=.o))))
 LIBOBJS += $(addprefix objs/, $(subst /,_,$(subst $(SRC)/,,$(LIB_CXXSRCS:.cpp=.o))))

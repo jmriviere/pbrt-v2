@@ -19,6 +19,7 @@
 #include "accelerators/bvh.h"
 #include "imageio.h"
 #include <time.h>
+#include "HDRimage.hpp"
 
 static LoggerPtr logger(Logger::getLogger(__FILE__));
 
@@ -167,6 +168,27 @@ void GpuRenderer::Render(const Scene *scene) {
 				<< err << " at line " << __LINE__);
 	}
 
+	hdr::image i;
+	i.loadPFM("/homes/jmr12/Thesis/pbrt-v2/scenes/textures/grace_latlong.pfm");
+
+	rnd::Uniform< float, rnd::Haynes, 6364136223846793005UL, 1UL >
+	        rng( time( nullptr ) );
+
+	obj::vect< uint32_t, 2 >* samples = i.sampleEM(4096, rng);
+
+	cl::Buffer derp(*(Host::instance())._context, CL_MEM_READ_ONLY,
+			2 * 64 * sizeof(uint32_t), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the derp buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+	err = Host::instance()._queue->enqueueWriteBuffer(derp, CL_TRUE, 0,
+			2 * 64 * sizeof(uint32_t),
+			samples, NULL, NULL);
+
+
 	k.setArg(0, bufLs);
 	k.setArg(1, bufCam);
 	k.setArg(2, 1);
@@ -174,7 +196,9 @@ void GpuRenderer::Render(const Scene *scene) {
 	k.setArg(4, buf_mprims);
 	k.setArg(5, buf_prims);
 	k.setArg(6, envgpu);
+	k.setArg(7, derp);
 
+	std::cout << "derp " << env_w << " " << env_h << std::endl;
 	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
 			cl::NDRange(camera->film->xResolution, camera->film->yResolution),
 			cl::NullRange, NULL, &ev);
