@@ -19,7 +19,6 @@ inline float3 reflection(Ray ray, float3 n) {
 }
 
 inline float3 refraction(Color* reflectance, Ray ray, float3 n, RNG* rng) {
-	//rng->c.v[0]++;
 	threefry4x32_ctr_t r = threefry4x32(rng->c, rng->k);
 
 	float3 n_real = dot(ray.direction, n) < 0 ? n : -n;
@@ -42,7 +41,7 @@ inline float3 refraction(Color* reflectance, Ray ray, float3 n, RNG* rng) {
 	float Re = R0 + (1-R0) * cost * cost * cost * cost * cost; // Schlick's approximation
 	float Tr = 1.f-Re;
 
-	float rand = u01_open_open_32_24(r.v[1]);
+	float rand = u01_open_open_32_24(r.v[0]);
 
 	if (rand <= 0.5) {
 		*reflectance *= 2.f * Re;
