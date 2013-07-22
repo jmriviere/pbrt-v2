@@ -64,8 +64,6 @@ InfiniteAreaLight::~InfiniteAreaLight() {
     delete radianceMap;
 }
 
-#include <iostream>
-
 InfiniteAreaLight::InfiniteAreaLight(const Transform &light2world,
         const Spectrum &L, int ns, const string &texmap)
     : Light(light2world, ns) {
@@ -292,8 +290,7 @@ size_t InfiniteAreaLight::toGPU(Metadata* meta, void* data) const {
 	        float sinTheta = sinf(M_PI * float(v+.5f)/float(height));
 	        for (uint32_t u = 0; u < width; ++u) {
 	            float up = (float)u / (float)width;
-	            Spectrum s = radianceMap->Lookup(up, vp, filter);
-				s *= sinTheta;
+	            Spectrum s = radianceMap->Lookup(up, vp, filter) * sinTheta;
 				s.ToRGB(rgb);
 				rgb[3] = 1.0;
 				std::memcpy(&((float *)data)[4 * (v * radianceMap->Width() +  u)], rgb, sizeof(rgb));

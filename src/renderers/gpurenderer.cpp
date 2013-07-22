@@ -57,6 +57,8 @@ void GpuRenderer::Render(const Scene *scene) {
 	PBRT_FINISHED_PARSING();
 	PBRT_STARTED_RENDERING();
 
+	cl::Kernel k;
+
 	cl_int err;
 	Metadata meta;
 
@@ -70,8 +72,8 @@ void GpuRenderer::Render(const Scene *scene) {
 	float* env = new float[c];
 	map->toGPU(&meta, env);
 
-	float env_w = meta.dim[0];
-	float env_h = meta.dim[1];
+	uint32_t env_w = meta.dim[0];
+	uint32_t env_h = meta.dim[1];
 
 	this->meta_primitives.push_back(meta);
 
@@ -83,7 +85,7 @@ void GpuRenderer::Render(const Scene *scene) {
 
 	Host::instance().buildKernels(KERNEL_PATH);
 
-	cl::Kernel k = Host::instance().retrieveKernel("ray_cast");
+	LOG(logger, INFO, "Starting pre-processing ...");
 
 	cl::Image2D envgpu(*(Host::instance()._context), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
 			cl::ImageFormat(CL_RGBA, CL_FLOAT), env_w, env_h, 0, env, &err);
@@ -167,6 +169,103 @@ void GpuRenderer::Render(const Scene *scene) {
 				<< err << " at line " << __LINE__);
 	}
 
+	cl::Buffer buf_lum(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			env_h * env_w * sizeof(float), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the luminance buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+	k = Host::instance().retrieveKernel("init_luminance_pwc");
+
+	k.setArg(0, envgpu);
+	k.setArg(1, buf_lum);
+	k.setArg(2, env_w);
+	k.setArg(3, env_h);
+
+	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange, cl::NDRange(env_w, env_h),
+			cl::NullRange, NULL, &ev);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error calling the kernel: "
+				<< err << " at line " << __LINE__);
+	}
+
+	cl::Buffer buf_cdfConditionalV(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			env_h * env_w * sizeof(float), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the cdf buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+//	cl::Buffer buf_cdfMarginal(buf_cdfConditional);
+	cl::Buffer buf_cdfMarginal(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			env_h * sizeof(float), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the cdf buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+	cl::Buffer buf_pConditionalV(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			env_h * sizeof(GPUDistribution1D), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the pConditionalV buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+//	cl::Buffer buf_pMarginal(buf_pConditionalV);
+	cl::Buffer buf_pMarginal(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			sizeof(GPUDistribution1D), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the pConditionalV buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+	k = Host::instance().retrieveKernel("init_Distribution1D");
+
+	k.setArg(0, buf_lum);
+	k.setArg(1, buf_cdfConditionalV);
+	k.setArg(2, buf_pConditionalV);
+	k.setArg(3, env_w);
+
+	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
+			cl::NDRange(env_h),
+			cl::NullRange, NULL, &ev);
+	ev.wait();
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error calling the kernel: "
+				<< err << " at line " << __LINE__);
+	}
+
+	k = Host::instance().retrieveKernel("init_Distribution1DCopy");
+
+	k.setArg(0, buf_pConditionalV);
+	k.setArg(1, buf_cdfMarginal);
+	k.setArg(2, buf_pMarginal);
+	k.setArg(3, env_h);
+
+	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
+			cl::NDRange(1),
+			cl::NullRange, NULL, &ev);
+	ev.wait();
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error calling the kernel: "
+				<< err << " at line " << __LINE__);
+	}
+
+	LOG(logger, INFO, "Pre-processing done!");
+	LOG(logger, INFO, "Ray tracing starting ...");
+
+	k = Host::instance().retrieveKernel("ray_cast");
+
+	// Path tracing
 	k.setArg(0, bufLs);
 	k.setArg(1, bufCam);
 	k.setArg(2, 1);
@@ -179,12 +278,12 @@ void GpuRenderer::Render(const Scene *scene) {
 			cl::NDRange(camera->film->xResolution, camera->film->yResolution),
 			cl::NullRange, NULL, &ev);
 
+	ev.wait();
+
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error calling the kernel: "
 				<< err << " at line " << __LINE__);
 	}
-
-	ev.wait();
 
 	err = Host::instance()._queue->enqueueReadBuffer(bufLs, CL_TRUE, 0,
 			4 * nPixels * sizeof(float), Ls, NULL, NULL);
@@ -193,6 +292,9 @@ void GpuRenderer::Render(const Scene *scene) {
 		LOG(logger, ERROR, "Error reading back from device: "
 				<< err << " at line " << __LINE__);
 	}
+
+	LOG(logger, INFO, "Ray tracing done!");
+	LOG(logger, INFO, "Writing image to disk");
 
 	float v[3];
 
@@ -214,6 +316,8 @@ void GpuRenderer::Render(const Scene *scene) {
 	}
 
 	camera->film->WriteImage();
+
+	LOG(logger, INFO, "Image saved!");
 
 	delete Ls;
 	delete env;
