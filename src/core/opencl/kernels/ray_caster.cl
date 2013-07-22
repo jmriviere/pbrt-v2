@@ -213,7 +213,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 	Color pixel = (Color)(0, 0, 0, 0);
 
-	spp = 64;
+	spp = 1024;
 
 	for (int i = 0; i < spp; i++) {
 		r = threefry4x32(rng.c , rng.k);
