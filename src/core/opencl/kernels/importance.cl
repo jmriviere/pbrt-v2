@@ -18,63 +18,79 @@ __kernel void init_luminance_pwc(__read_only image2d_t env, __global float* pw_l
 	pw_lum[y * width + x] = dot(lum, weight);
 }
 
-__kernel void init_Distribution1D(__global float* func, __global float* cdf,
-		__global Distribution1D* pdf, uint n) {
+__kernel void init_Distribution2D(__global const float* func,  uint n,
+		__global float* cdfV, __global Distribution1D* d1dV, __global float* funcRed) {
 	uint id =  get_global_id(0);
 	uint offset = n * id;
 
-	Distribution1D d1d;
-    d1d.count = n;
-    d1d.offset = offset;
+	Distribution1D d1d_array_entry;
+	d1d_array_entry.count = n;
+	d1d_array_entry.offset = offset;
     // Compute integral of step function at $x_i$
-    cdf[offset] = 0.f;
+	cdfV[offset] = 0.f;
     for (uint i = 1; i < n+1; ++i) {
-        cdf[offset + i] = cdf[offset + i-1] + func[offset + i-1] / n;
+        cdfV[offset + i] = cdfV[offset + i-1] + func[offset + i-1] / n;
     }
 
     // Transform step function integral into CDF
-    d1d.integral = cdf[offset + n];
-    if (d1d.integral == 0.f) {
+    d1d_array_entry.integral = cdfV[offset + n];
+    if (d1d_array_entry.integral == 0.f) {
         for (uint i = 1; i < n+1; ++i)
-            cdf[offset + i] = (float)i / (float)n;
+            cdfV[offset + i] = (float)i / (float)n;
     }
     else {
-        for (int i = 1; i < n+1; ++i)
-            cdf[offset + i] /= d1d.integral;
-    }
-    pdf[id] = d1d;
-}
-
-// Look into atomic operations and synchronization
-__kernel void init_Distribution1DCopy(__global Distribution1D* toCopy, __global float* cdf,
-		__global Distribution1D* pdf, uint n) {
-	uint id =  get_global_id(0); // Should always be 0
-	uint offset = n * id; // Should always be 0
-
-	Distribution1D d1d;
-    d1d.count = n;
-    d1d.offset = offset;
-    // Compute integral of step function at $x_i$
-    cdf[offset] = 0.f;
-    for (uint i = 1; i < n+1; ++i) {
-        cdf[offset + i] = cdf[offset + i-1] + toCopy[offset + i-1].integral / n;
-        printf("%g ", cdf[offset + i-1]);
-    }
-
-    // Transform step function integral into CDF
-    d1d.integral = cdf[offset + n];
-    if (d1d.integral == 0.f) {
         for (uint i = 1; i < n+1; ++i)
-            cdf[offset + i] = (float)i / (float)n;
+            cdfV[offset + i] /= d1d_array_entry.integral;
     }
-    else {
-        for (int i = 1; i < n+1; ++i)
-            cdf[offset + i] /= d1d.integral;
-    }
-    *pdf = d1d;
+    d1dV[id] = d1d_array_entry;
+    if (funcRed) funcRed[id] = d1d_array_entry.integral;
 }
 
-//__kernel void init_pdf(__global float* pw_lum, __global Distribution2D* d2d,
-//		uint width, uint height) {
-//	Distribution1D()
-//}
+// Binary search!!
+static inline int upper_bound(float u, __global const float* cdf, int size) {
+	int imin = 0;
+	int imax = size - 1;
+	// continue searching while [imin,imax] is not empty
+	while (imax >= imin) {
+		/* calculate the midpoint for roughly equal partition */
+		int imid = imin + (imax-imin)/2;
+
+		// determine which subarray to search
+		if (cdf[imid] < u) {
+			// change min index to search upper subarray
+			imin = imid + 1;
+		}
+		else if (cdf[imid] > u) {
+			// change max index to search lower subarray
+			imax = imid - 1;
+		}
+		else
+			// The value directly superior to u is at imid+1
+			return imid + 1;
+	}
+	return imax;
+}
+
+float2 sampleContinuous2D(float u1, float u2, __global const Distribution1D* pConditionalV,
+		Distribution1D pMarginal, __global const float* cdfConditionalV,
+		__global const float* cdfMarginal, __global const float* fun2D,
+		__global const float* fun1D, float* pdf) {
+	int v;
+	float pdfs[2];
+	float s1 = sampleContinuous1D(u1, pMarginal, cdfMarginal, fun1D, &v, &pdfs[0]);
+	float s2 = sampleContinuous1D(u2, pConditionalV[v], cdfConditionalV, fun2D, &v, &pdfs[1]);
+	float2 sample = (float2)(s1, s2);
+	*pdf = pdfs[0] * pdfs[1];
+	return sample;
+}
+
+float sampleContinuous1D(float u, Distribution1D distribution, __global const float* cdf,
+		__global const float* func, int* offset, float* pdf) {
+	int off = upper_bound(u, &cdf[distribution.offset], distribution.count);
+	*offset = off;
+	// Compute offset along CDF segment
+	float du = (u - cdf[distribution.offset + off]) /
+			(cdf[distribution.offset + off+1] - cdf[distribution.offset + off]);
+	*pdf = func[distribution.offset + off] / distribution.integral;
+	return (off + du) / distribution.count;
+}

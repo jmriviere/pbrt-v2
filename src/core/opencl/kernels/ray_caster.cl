@@ -5,7 +5,6 @@
  *      Author: poupine
  */
 
-#include "GPU.h"
 #include "ray_caster.h"
 #include "fresnel.h"
 #include "camera.h"
@@ -105,7 +104,10 @@ Color lookup(image2d_t env, Ray ray) {
 }
 
 Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global float* prims,
-			   int nb_prims, RNG* rng) {
+			   int nb_prims, RNG* rng, __global const Distribution1D* pConditionalV,
+			   Distribution1D pMarginal, __global const float* cdfConditionalV,
+			   __global const float* cdfMarginal, __global const float* fun2D,
+			   __global const float* fun1D) {
 
 	Color reflectance = (Color)(1, 1, 1, 1);
 	Color cl = (Color)(0,0,0,0);
@@ -120,10 +122,11 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 	while(true) {
 		rng->c.v[0]++;
 		rng->c.v[1]++;
+
 		r = threefry4x32(rng->c, rng->k);
 
 		float rand = u01_open_open_32_24(r.v[0]);
-
+//
 		if (!intersect(&hit, ray, meta_prims, prims, nb_prims)) {
 			ray.direction = transform_vect(ray.direction, meta_prims[nb_prims - 1].fromWorld);
 			cl += reflectance * lookup(env, ray);
@@ -150,50 +153,86 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		float3 n = normalize(transform_point(hitpoint, meta_prims[hit.id].fromWorld));
 		ray.origin = hitpoint;
 
-
-		//switch (meta_prims[hit.id].mat) {
+//		//switch (meta_prims[hit.id].mat) {
 		switch (hit.id) {
-		case 0:
-			ray.direction = reflection(ray, n);
-			break;
+//		case 0:
+//		case 1:
+//			ray.direction = reflection(ray, n);
+//			break;
 		//case REFR:
-		case 1:
-			ray.direction = refraction(&reflectance, ray, n, rng);
-			break;
+//		case 1:
+//			ray.direction = refraction(&reflectance, ray, n, rng);
+//			break;
 		default:
-			float eps1 = u01_open_open_32_24(r.v[0]);
-			float eps2 = u01_open_open_32_24(r.v[1]);
+			float u1 = u01_open_open_32_24(r.v[0]);
+			float u2 = u01_open_open_32_24(r.v[1]);
 
-			float theta = acos(sqrt(1.0 - eps1));
-			float phi = 2.0 * M_PI * eps2;
+			float mapPdf;
 
-			float xs = sin(theta) * cos(phi);
-			float ys = sin(theta) * sin(phi);
-			float zs = cos(theta);
+			float2 sample = sampleContinuous2D(u1, u2, pConditionalV, pMarginal, cdfConditionalV,
+					cdfMarginal, fun2D, fun1D, &mapPdf);
 
-			float3 h = n;
-
-			if (fabs(h.x) <= fabs(h.y) && fabs(h.x) <= fabs(h.z)) {
-				h.x = 1.0;
-			}
-			else if (fabs(h.y) <= fabs(h.x) && fabs(h.y) <= fabs(h.z)) {
-				h.y = 1.0;
-			}
-			else {
-				h.z = 1.0;
+			if (mapPdf == 0.f) {
+				return (0,0,0,0);
 			}
 
-			float3 x = normalize(cross(h, n));
-			float3 y = normalize(cross(x, n));
+		    sample *= sph_coord;
 
-			ray.direction = (float3)normalize(xs * x + ys * y + zs * n);
+		    float costheta = cos(sample.x), sintheta = sin(sample.x);
+		    float sinphi = sin(sample.y), cosphi = cos(sample.y);
+
+		    ray.direction = (float3)(sintheta * cosphi, sintheta * sinphi, costheta);
+		    ray.direction = normalize(ray.direction);
+
+		    float cosi = dot(ray.direction, n);
+
+		    if (cosi < 0) {
+		    	return (0,0,0,0);
+		    }
+
+//		    if (intersect(&hit, ray, meta_prims, prims, nb_prims)) {
+//		    	return (0,0,0,0);
+//		    }
+
+		    reflectance *= cosi * 1/M_PI * 1.f/mapPdf;
+
+//			float eps1 = u01_open_open_32_24(r.v[1]);
+//			float eps2 = u01_open_open_32_24(r.v[2]);
+//
+//			float theta = acos(sqrt(1.0 - eps1));
+//			float phi = 2.0 * M_PI * eps2;
+//
+//			float xs = sin(theta) * cos(phi);
+//			float ys = sin(theta) * sin(phi);
+//			float zs = cos(theta);
+//
+//			float3 h = n;
+//
+//			if (fabs(h.x) <= fabs(h.y) && fabs(h.x) <= fabs(h.z)) {
+//				h.x = 1.0;
+//			}
+//			else if (fabs(h.y) <= fabs(h.x) && fabs(h.y) <= fabs(h.z)) {
+//				h.y = 1.0;
+//			}
+//			else {
+//				h.z = 1.0;
+//			}
+//
+//			float3 x = normalize(cross(h, n));
+//			float3 y = normalize(cross(x, n));
+//
+//			ray.direction = (float3)normalize(xs * x + ys * y + zs * n);
 			break;
 		}
 	}
 }
 
-__kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, int nb_prims, __global Metadata* meta_prims,
-					   __global float* prims, __read_only image2d_t env) {
+__kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, int nb_prims,
+						__global Metadata* meta_prims, __global float* prims,
+						__read_only image2d_t env, __global const Distribution1D* pConditionalV,
+						__global Distribution1D* pMarginal, __global const float* cdfConditionalV,
+						__global const float* cdfMarginal, __global const float* fun2D,
+						__global const float* fun1D) {
 
 	int xPos = get_global_id(0);
 	int yPos = get_global_id(1);
@@ -201,7 +240,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 	RNG rng;
 
 	threefry4x32_key_t k = {{yPos, 0xdecafbad, 0xfacebead, 0x12345678}};;
-	threefry4x32_ctr_t c = {{xPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};;
+	threefry4x32_ctr_t c = {{xPos + yPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};;
 
 	rng.k = k;
 	rng.c = c;
@@ -214,7 +253,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 	Color pixel = (Color)(0, 0, 0, 0);
 
-	spp = 14;
+	spp = 8;
 
 	for (int i = 0; i < spp; i++) {
 		r = threefry4x32(rng.c , rng.k);
@@ -222,13 +261,13 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 		rand_x = u01_open_open_32_24(r.v[0]);
 		rand_y = u01_open_open_32_24(r.v[1]);
 
-
 		sample_x = ((float)xPos + rand_x);
 		sample_y = ((float)yPos + rand_y);
 
 		Ray ray = generate_ray(*cam, (float2)(sample_x, sample_y));
 
-		pixel += radiance(env, ray, meta_prims, prims, nb_prims, &rng);
+		pixel += radiance(env, ray, meta_prims, prims, nb_prims, &rng, pConditionalV,
+						*pMarginal, cdfConditionalV, cdfMarginal, fun2D, fun1D);
 
 	}
 

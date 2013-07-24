@@ -200,7 +200,6 @@ void GpuRenderer::Render(const Scene *scene) {
 				<< err << " at line " << __LINE__);
 	}
 
-//	cl::Buffer buf_cdfMarginal(buf_cdfConditional);
 	cl::Buffer buf_cdfMarginal(*(Host::instance())._context, CL_MEM_READ_WRITE,
 			env_h * sizeof(float), NULL, &err);
 
@@ -217,7 +216,6 @@ void GpuRenderer::Render(const Scene *scene) {
 				<< err << " at line " << __LINE__);
 	}
 
-//	cl::Buffer buf_pMarginal(buf_pConditionalV);
 	cl::Buffer buf_pMarginal(*(Host::instance())._context, CL_MEM_READ_WRITE,
 			sizeof(GPUDistribution1D), NULL, &err);
 
@@ -226,12 +224,21 @@ void GpuRenderer::Render(const Scene *scene) {
 				<< err << " at line " << __LINE__);
 	}
 
-	k = Host::instance().retrieveKernel("init_Distribution1D");
+	cl::Buffer buf_func1D(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			env_h * sizeof(float), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the func1D buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+	k = Host::instance().retrieveKernel("init_Distribution2D");
 
 	k.setArg(0, buf_lum);
-	k.setArg(1, buf_cdfConditionalV);
-	k.setArg(2, buf_pConditionalV);
-	k.setArg(3, env_w);
+	k.setArg(1, env_w);
+	k.setArg(2, buf_cdfConditionalV);
+	k.setArg(3, buf_pConditionalV);
+	k.setArg(4, buf_func1D);
 
 	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
 			cl::NDRange(env_h),
@@ -243,22 +250,16 @@ void GpuRenderer::Render(const Scene *scene) {
 				<< err << " at line " << __LINE__);
 	}
 
-	k = Host::instance().retrieveKernel("init_Distribution1DCopy");
-
-	k.setArg(0, buf_pConditionalV);
-	k.setArg(1, buf_cdfMarginal);
-	k.setArg(2, buf_pMarginal);
-	k.setArg(3, env_h);
+	k.setArg(0, buf_func1D);
+	k.setArg(1, env_h);
+	k.setArg(2, buf_cdfMarginal);
+	k.setArg(3, buf_pMarginal);
+	k.setArg(4, NULL);
 
 	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
 			cl::NDRange(1),
 			cl::NullRange, NULL, &ev);
 	ev.wait();
-
-	if (CL_SUCCESS != err) {
-		LOG(logger, ERROR, "Error calling the kernel: "
-				<< err << " at line " << __LINE__);
-	}
 
 	LOG(logger, INFO, "Pre-processing done!");
 	LOG(logger, INFO, "Ray tracing starting ...");
@@ -273,6 +274,12 @@ void GpuRenderer::Render(const Scene *scene) {
 	k.setArg(4, buf_mprims);
 	k.setArg(5, buf_prims);
 	k.setArg(6, envgpu);
+	k.setArg(7, buf_pConditionalV);
+	k.setArg(8, buf_pMarginal);
+	k.setArg(9, buf_cdfConditionalV);
+	k.setArg(10, buf_cdfMarginal);
+	k.setArg(11, buf_lum);
+	k.setArg(12, buf_func1D);
 
 	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
 			cl::NDRange(camera->film->xResolution, camera->film->yResolution),

@@ -31,7 +31,7 @@ AttributeEnd
 
 AttributeBegin
 Translate 1 0 -0.5
-Material "glass"
+Material "matte"
 Shape "sphere" "float radius" [.5]
 AttributeEnd
 
