@@ -160,36 +160,36 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 			ray.direction = refraction(&reflectance, ray, n, rng);
 			break;
 		default:
-			float eps1 = u01_open_open_32_24(r.v[0]);
-//			uint2 gaderp = derp[bla];
-//			float theta = (gaderp.s0/512.f) * M_PI;
-//			float phi = (gaderp.s1/1024.f) * 2 * M_PI;
-//			ray.direction = normalize((float3)( sin(theta) * cos(phi),sin(theta) * sin(phi),cos(theta)));
-			float eps2 = u01_open_open_32_24(r.v[1]);
-
-			float theta = acos(sqrt(1.0 - eps1));
-			float phi = 2.0 * M_PI * eps2;
-
-			float xs = sin(theta) * cos(phi);
-			float ys = sin(theta) * sin(phi);
-			float zs = cos(theta);
-
-			float3 h = n;
-
-			if (fabs(h.x) <= fabs(h.y) && fabs(h.x) <= fabs(h.z)) {
-				h.x = 1.0;
-			}
-			else if (fabs(h.y) <= fabs(h.x) && fabs(h.y) <= fabs(h.z)) {
-				h.y = 1.0;
-			}
-			else {
-				h.z = 1.0;
-			}
-
-			float3 x = normalize(cross(h, n));
-			float3 y = normalize(cross(x, n));
-
-			ray.direction = (float3)normalize(xs * x + ys * y + zs * n);
+//			float eps1 = u01_open_open_32_24(r.v[0]);
+			uint2 gaderp = derp[bla];
+			float theta = (gaderp.s0/512.f) * M_PI;
+			float phi = (gaderp.s1/1024.f) * 2 * M_PI;
+			ray.direction = normalize((float3)( sin(theta) * cos(phi),sin(theta) * sin(phi),cos(theta)));
+//			float eps2 = u01_open_open_32_24(r.v[1]);
+//
+//			float theta = acos(sqrt(1.0 - eps1));
+//			float phi = 2.0 * M_PI * eps2;
+//
+//			float xs = sin(theta) * cos(phi);
+//			float ys = sin(theta) * sin(phi);
+//			float zs = cos(theta);
+//
+//			float3 h = n;
+//
+//			if (fabs(h.x) <= fabs(h.y) && fabs(h.x) <= fabs(h.z)) {
+//				h.x = 1.0;
+//			}
+//			else if (fabs(h.y) <= fabs(h.x) && fabs(h.y) <= fabs(h.z)) {
+//				h.y = 1.0;
+//			}
+//			else {
+//				h.z = 1.0;
+//			}
+//
+//			float3 x = normalize(cross(h, n));
+//			float3 y = normalize(cross(x, n));
+//
+//			ray.direction = (float3)normalize(xs * x + ys * y + zs * n);
 			break;
 		}
 	}
@@ -217,7 +217,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 	Color pixel = (Color)(0, 0, 0, 0);
 
-	spp = 256;
+	spp = 2048;
 
 	for (int i = 0; i < spp; i++) {
 		//rng.c.v[0]++;
