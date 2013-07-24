@@ -126,7 +126,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		r = threefry4x32(rng->c, rng->k);
 
 		float rand = u01_open_open_32_24(r.v[0]);
-//
+
 		if (!intersect(&hit, ray, meta_prims, prims, nb_prims)) {
 			ray.direction = transform_vect(ray.direction, meta_prims[nb_prims - 1].fromWorld);
 			cl += reflectance * lookup(env, ray);
@@ -155,14 +155,13 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 //		//switch (meta_prims[hit.id].mat) {
 		switch (hit.id) {
-//		case 0:
-//		case 1:
-//			ray.direction = reflection(ray, n);
-//			break;
-		//case REFR:
-//		case 1:
-//			ray.direction = refraction(&reflectance, ray, n, rng);
-//			break;
+		case 0:
+			ray.direction = reflection(ray, n);
+			break;
+//		case REFR:
+		case 1:
+			ray.direction = refraction(&reflectance, ray, n, rng);
+			break;
 		default:
 			float u1 = u01_open_open_32_24(r.v[0]);
 			float u2 = u01_open_open_32_24(r.v[1]);
@@ -172,29 +171,26 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 			float2 sample = sampleContinuous2D(u1, u2, pConditionalV, pMarginal, cdfConditionalV,
 					cdfMarginal, fun2D, fun1D, &mapPdf);
 
-			if (mapPdf == 0.f) {
-				return (0,0,0,0);
-			}
-
 		    sample *= sph_coord;
 
 		    float costheta = cos(sample.x), sintheta = sin(sample.x);
 		    float sinphi = sin(sample.y), cosphi = cos(sample.y);
 
-		    ray.direction = (float3)(sintheta * cosphi, sintheta * sinphi, costheta);
-		    ray.direction = normalize(ray.direction);
+		    if (isnan(costheta) || isnan(sintheta) || isnan(cosphi) || isnan(sinphi) ||
+		    		isnan(mapPdf))
+		    	continue;
 
-		    float cosi = dot(ray.direction, n);
+		    float3 direction = (float3)(sintheta * cosphi, sintheta * sinphi, costheta);
+		    direction = normalize(direction);
+
+		    float cosi = dot(direction, n);
 
 		    if (cosi < 0) {
-		    	return (0,0,0,0);
+		    	continue;
 		    }
 
-//		    if (intersect(&hit, ray, meta_prims, prims, nb_prims)) {
-//		    	return (0,0,0,0);
-//		    }
-
-		    reflectance *= cosi * 1/M_PI * 1.f/mapPdf;
+		    ray.direction = direction;
+		    //reflectance *= cosi;//1.f/mapPdf;//cosi * 2.f * M_PI * sintheta * 1.f/mapPdf;
 
 //			float eps1 = u01_open_open_32_24(r.v[1]);
 //			float eps2 = u01_open_open_32_24(r.v[2]);
@@ -240,7 +236,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 	RNG rng;
 
 	threefry4x32_key_t k = {{yPos, 0xdecafbad, 0xfacebead, 0x12345678}};;
-	threefry4x32_ctr_t c = {{xPos + yPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};;
+	threefry4x32_ctr_t c = {{xPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};;
 
 	rng.k = k;
 	rng.c = c;
@@ -253,7 +249,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 	Color pixel = (Color)(0, 0, 0, 0);
 
-	spp = 8;
+	spp = 1024;
 
 	for (int i = 0; i < spp; i++) {
 		r = threefry4x32(rng.c , rng.k);
@@ -266,11 +262,13 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 		Ray ray = generate_ray(*cam, (float2)(sample_x, sample_y));
 
-		pixel += radiance(env, ray, meta_prims, prims, nb_prims, &rng, pConditionalV,
+		Color rad = radiance(env, ray, meta_prims, prims, nb_prims, &rng, pConditionalV,
 						*pMarginal, cdfConditionalV, cdfMarginal, fun2D, fun1D);
+		if (!isnan(rad.s0) && !isnan(rad.s1) && !isnan(rad.s2) && !isnan(rad.s3)) {
+			pixel += rad;
+		}
 
 	}
-
-	Ls[yPos * 800 + xPos] = pixel/spp;
+		Ls[yPos * 800 + xPos] = pixel/spp;
 
 }
