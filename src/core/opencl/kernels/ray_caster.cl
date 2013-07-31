@@ -34,9 +34,9 @@ bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global floa
 	float q;
 
 	if (B < 0)
-	        q = -0.5 * (B - sqrt_d);
+	        q = -0.5f * (B - sqrt_d);
 	    else
-	        q = -0.5 * (B + sqrt_d);
+	        q = -0.5f * (B + sqrt_d);
 
 	float t0 = q/A;
 	float t1 = C/q;
@@ -71,13 +71,16 @@ bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global floa
 
 bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float* prims, int nb_prims) {
 	float temp;
-	hit->t = 1e5;
+	hit->t = 1e5f;
+	hit->selfisect = false;
 
 	for (uint i = 0; i < nb_prims - 1; ++i) {
 		switch (meta_prims[i].type) {
 		case sphere:
 			temp = hit->t;
 			if (ray_sphere_intersection(hit, ray, meta_prims[i], prims) && hit->t < temp) {
+				if (hit->id == i && hit->t < 1e-2f)
+					hit->selfisect = true;
 				hit->id = i;
 			}
 			else {
@@ -88,7 +91,7 @@ bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float*
 			break;
 		}
 	}
-	return hit->t < 1e5;
+	return hit->t < 1e5f;
 }
 
 
@@ -97,7 +100,7 @@ Color lookup(image2d_t env, Ray ray) {
 	dir.s2 = (dir.s2 > 1.f ? 1.f : (dir.s2 < -1.f ? -1.f : dir.s2));
 	float theta = acos(dir.s2);
 	float phi = atan2(dir.s1, dir.s0);
-	float x = (phi < 0.f ? phi + 2 * M_PI : phi)/(2 * M_PI);
+	float x = (phi < 0.f ? phi + 2.f * M_PI : phi)/(2.f * M_PI);
 	float y = theta/M_PI;
 	Color c = read_imagef(env, sampler, (float2)(x,y));
 	return c;
@@ -130,22 +133,22 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		if (!intersect(&hit, ray, meta_prims, prims, nb_prims)) {
 			ray.direction = transform_vect(ray.direction, meta_prims[nb_prims - 1].fromWorld);
 			cl += reflectance * lookup(env, ray);
-			return cl;
+			break;
 		}
 
 		float p = min(0.5f, reflectance.s1);
 
-		if (i++ > 3) {
+		if (i++ >= 3) {
 			if (rand < p) {
 				reflectance /= p;
 			}
 			else {
-				return cl;
+				break;
 			}
 		}
 
-		if (hit.t < 1e-2) {
-			ray.origin += 1e-2 * ray.direction;
+		if (hit.t < 1e-2f && hit.selfisect) {
+			ray.origin += 1e-2f * ray.direction;
 			continue;
 		}
 
@@ -163,6 +166,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 			ray.direction = refraction(&reflectance, ray, n, rng);
 			break;
 		default:
+			{
 			float u1 = u01_open_open_32_24(r.v[0]);
 			float u2 = u01_open_open_32_24(r.v[1]);
 
@@ -176,21 +180,16 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		    float costheta = cos(sample.x), sintheta = sin(sample.x);
 		    float sinphi = sin(sample.y), cosphi = cos(sample.y);
 
-		    if (isnan(costheta) || isnan(sintheta) || isnan(cosphi) || isnan(sinphi) ||
-		    		isnan(mapPdf))
-		    	continue;
+		    float cosi = dot(-ray.direction, n);
 
-		    float3 direction = (float3)(sintheta * cosphi, sintheta * sinphi, costheta);
-		    direction = normalize(direction);
+		    float3 direction = normalize((float3)(sintheta * cosphi, sintheta * sinphi, costheta));
 
-		    float cosi = dot(direction, n);
-
-		    if (cosi < 0) {
-		    	continue;
-		    }
+		    if (cosi < 0 || mapPdf == 0.f || sintheta == 0.f)
+		    	return (Color)(0,0,0,0);
 
 		    ray.direction = direction;
-		    //reflectance *= cosi;//1.f/mapPdf;//cosi * 2.f * M_PI * sintheta * 1.f/mapPdf;
+
+		    reflectance *= 2.f * M_PI * sintheta * cosi/mapPdf;
 
 //			float eps1 = u01_open_open_32_24(r.v[1]);
 //			float eps2 = u01_open_open_32_24(r.v[2]);
@@ -218,9 +217,11 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 //			float3 y = normalize(cross(x, n));
 //
 //			ray.direction = (float3)normalize(xs * x + ys * y + zs * n);
-			break;
+//			break;
+			}
 		}
 	}
+	return cl;
 }
 
 __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, int nb_prims,
@@ -235,8 +236,8 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 	RNG rng;
 
-	threefry4x32_key_t k = {{yPos, 0xdecafbad, 0xfacebead, 0x12345678}};;
-	threefry4x32_ctr_t c = {{xPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};;
+	threefry4x32_key_t k = {{xPos, 0xdecafbad, 0xfacebead, 0x12345678}};
+	threefry4x32_ctr_t c = {{yPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};
 
 	rng.k = k;
 	rng.c = c;
@@ -249,9 +250,9 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 	Color pixel = (Color)(0, 0, 0, 0);
 
-	spp = 1024;
+	spp = 50000;
 
-	for (int i = 0; i < spp; i++) {
+	for (uint i = 0; i < spp; i++) {
 		r = threefry4x32(rng.c , rng.k);
 
 		rand_x = u01_open_open_32_24(r.v[0]);
@@ -264,11 +265,8 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 		Color rad = radiance(env, ray, meta_prims, prims, nb_prims, &rng, pConditionalV,
 						*pMarginal, cdfConditionalV, cdfMarginal, fun2D, fun1D);
-		if (!isnan(rad.s0) && !isnan(rad.s1) && !isnan(rad.s2) && !isnan(rad.s3)) {
-			pixel += rad;
-		}
-
+		pixel += rad;
 	}
-		Ls[yPos * 800 + xPos] = pixel/spp;
+	Ls[yPos * 800 + xPos] = pixel/spp;
 
 }

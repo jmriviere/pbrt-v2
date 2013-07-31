@@ -10,9 +10,9 @@
 
 #include "GPU.h"
 
-#define ETA_VACUUM 1.0
-#define ETA_GLASS 1.5
-#define Kr 0.99
+#define ETA_VACUUM 1.0f
+#define ETA_GLASS 1.5f
+#define Kr 0.99f
 
 inline float3 reflection(Ray ray, float3 n) {
 	return normalize((ray.direction - 2 * dot(ray.direction, n) * n));
@@ -43,7 +43,7 @@ inline float3 refraction(Color* reflectance, Ray ray, float3 n, RNG* rng) {
 
 	float rand = u01_open_open_32_24(r.v[0]);
 
-	if (rand <= 0.5) {
+	if (rand <= 0.5f) {
 		*reflectance *= 2.f * Re;
 		return reflection(ray, n_real);
 	}

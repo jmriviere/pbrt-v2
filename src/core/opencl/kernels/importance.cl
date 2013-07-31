@@ -50,6 +50,7 @@ __kernel void init_Distribution2D(__global const float* func,  uint n,
 static inline int upper_bound(float u, __global const float* cdf, int size) {
 	int imin = 0;
 	int imax = size - 1;
+
 	// continue searching while [imin,imax] is not empty
 	while (imax >= imin) {
 		/* calculate the midpoint for roughly equal partition */
@@ -66,19 +67,19 @@ static inline int upper_bound(float u, __global const float* cdf, int size) {
 		}
 		else
 			// The value directly superior to u is at imid+1
-			return imid + 1;
+			return imid;
 	}
 	return imax;
 }
 
-float2 sampleContinuous2D(float u1, float u2, __global const Distribution1D* pConditionalV,
+inline float2 sampleContinuous2D(float u1, float u2, __global const Distribution1D* pConditionalV,
 		Distribution1D pMarginal, __global const float* cdfConditionalV,
 		__global const float* cdfMarginal, __global const float* fun2D,
 		__global const float* fun1D, float* pdf) {
-	int v;
+	int v,vv;
 	float pdfs[2];
 	float s1 = sampleContinuous1D(u1, pMarginal, cdfMarginal, fun1D, &v, &pdfs[0]);
-	float s2 = sampleContinuous1D(u2, pConditionalV[v], cdfConditionalV, fun2D, &v, &pdfs[1]);
+	float s2 = sampleContinuous1D(u2, pConditionalV[v], cdfConditionalV, fun2D, &vv, &pdfs[1]);
 	float2 sample = (float2)(s1, s2);
 	*pdf = pdfs[0] * pdfs[1];
 	return sample;

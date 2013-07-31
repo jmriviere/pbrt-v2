@@ -18,7 +18,8 @@
 #include "util.h"
 #include "accelerators/bvh.h"
 #include "imageio.h"
-#include <time.h>
+
+using namespace std;
 
 static LoggerPtr logger(Logger::getLogger(__FILE__));
 
@@ -281,11 +282,24 @@ void GpuRenderer::Render(const Scene *scene) {
 	k.setArg(11, buf_lum);
 	k.setArg(12, buf_func1D);
 
-	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
+	int nb_im = 0;
+
+	cl_ulong time_start, time_end;
+	double total_time = 0;
+//	while (1) {
+		err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
 			cl::NDRange(camera->film->xResolution, camera->film->yResolution),
 			cl::NullRange, NULL, &ev);
 
-	ev.wait();
+		ev.wait();
+
+		ev.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
+		ev.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
+		total_time += (time_end - time_start) / 1000000000.0;
+//		cout << (time_end - time_start) << endl;
+//		nb_im++;
+		cout << total_time << endl;
+//	}
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error calling the kernel: "

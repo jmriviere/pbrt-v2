@@ -11,7 +11,7 @@
 #include "importance.h"
 #include "GPU.h"
 
-__const float2 sph_coord = (float2)(M_PI, 2.f * M_PI);
+__constant float2 sph_coord = (float2)(M_PI, 2.f * M_PI);
 
 bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global float* prims);
 bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims, __global float* prims, int nb_prims);

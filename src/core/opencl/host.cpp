@@ -63,7 +63,7 @@ void Host::buildKernels(string path) {
 
 	try {
 		LOG(logger, DEBUG, "Compilation Started");
-		std::string options("-I" + std::string(KERNEL_PATH));
+		std::string options("-I" + std::string(KERNEL_PATH) + " -Werror -cl-denorms-are-zero");
 		prog.build(_devices, options.c_str(), NULL, NULL);
 
 		prog.createKernels(&_kernels);
