@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sys/types.h>
 #include <dirent.h>
+#include <GL/glx.h>
 #include "host.h"
 
 using namespace std;
@@ -172,7 +173,16 @@ Host::Host() : p_index(0) {
 		LOG(logger, INFO, "Found " << _devices.size() << " devices\n");
 		check_gpu();
 		LOG(logger, INFO, device());
-		_context = new cl::Context(_devices);
+
+		// CL/GL interop
+		cl_context_properties properties[] = {
+			CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
+			CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
+			CL_CONTEXT_PLATFORM, (cl_context_properties) _platforms,
+			0
+		};
+
+		_context = new cl::Context(_devices, properties);
 		_queue = new cl::CommandQueue(*_context, _devices[d_index], CL_QUEUE_PROFILING_ENABLE);
 	}
 	catch (cl::Error e) {
