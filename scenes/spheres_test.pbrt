@@ -24,21 +24,28 @@ AttributeEnd
 
 AttributeBegin
 Translate -1 0 -0.5
-Material "matte"
-Shape "sphere" "float radius" [.5]
+Material "substrate" "float uroughness" [0.02] "float vroughness" [0.02]
+"color Kr" [1. 1. 1.] "color Kd" [0 0 0]
+Shape "sphere" "float radius" [.6]
 AttributeEnd
 
 
 AttributeBegin
 Translate 1 0 -0.5
-Material "matte"
-Shape "sphere" "float radius" [.5]
+Material "mirror"
+Shape "sphere" "float radius" [.6]
 AttributeEnd
 
 AttributeBegin
 Translate 0 0 10
-Material "matte"
+Material "mirror"
 Shape "sphere" "float radius" [10]
+AttributeEnd
+
+AttributeBegin
+Translate -2 0 -0.5
+Material "mirror"
+Shape "sphere" "float radius" [.5]
 AttributeEnd
 
 WorldEnd

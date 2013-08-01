@@ -41,6 +41,8 @@ inline float3 refraction(Color* reflectance, Ray ray, float3 n, RNG* rng) {
 	float Re = R0 + (1-R0) * cost * cost * cost * cost * cost; // Schlick's approximation
 	float Tr = 1.f-Re;
 
+
+
 	float rand = u01_open_open_32_24(r.v[0]);
 
 	if (rand <= 0.5f) {

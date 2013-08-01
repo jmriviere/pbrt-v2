@@ -262,6 +262,11 @@ void GpuRenderer::Render(const Scene *scene) {
 			cl::NullRange, NULL, &ev);
 	ev.wait();
 
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error calling the kernel: "
+				<< err << " at line " << __LINE__);
+	}
+
 	LOG(logger, INFO, "Pre-processing done!");
 	LOG(logger, INFO, "Ray tracing starting ...");
 
