@@ -78,8 +78,10 @@ inline float2 sampleContinuous2D(float u1, float u2, __global const Distribution
 		__global const float* fun1D, float* pdf) {
 	int v,vv;
 	float pdfs[2];
-	float s1 = sampleContinuous1D(u1, pMarginal, cdfMarginal, fun1D, &v, &pdfs[0]);
-	float s2 = sampleContinuous1D(u2, pConditionalV[v], cdfConditionalV, fun2D, &vv, &pdfs[1]);
+	float s1 = max(sampleContinuous1D(u1, pMarginal, cdfMarginal, fun1D, &v, &pdfs[0]), 0.f);
+	float s2 = max(
+			sampleContinuous1D(u2, pConditionalV[v], cdfConditionalV, fun2D, &vv, &pdfs[1]), 0.f
+			);
 	float2 sample = (float2)(s1, s2);
 	*pdf = pdfs[0] * pdfs[1];
 	return sample;

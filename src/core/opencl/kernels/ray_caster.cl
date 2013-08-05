@@ -174,6 +174,9 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 				float2 sample = sampleContinuous2D(u1, u2, pConditionalV, pMarginal, cdfConditionalV,
 						cdfMarginal, fun2D, fun1D, &mapPdf);
 
+				if (sample.x < 0 || sample.y < 0)
+					printf((__constant char *)"%v2f\n", sample);
+
 				sample *= sph_coord;
 
 				float costheta = cos(sample.x), sintheta = sin(sample.x);
