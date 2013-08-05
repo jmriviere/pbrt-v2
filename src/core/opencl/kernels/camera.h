@@ -23,7 +23,7 @@ Ray generate_ray(GPUCamera c, float2 raster) {
 	float3 Praster = (float3)(raster, 0);
 	float3 dir = normalize(transform_point(Praster, c.r2c));
 
-	r.origin = transform_point((0, 0, 0), c.c2w);
+	r.origin = transform_point((float3)(0, 0, 0), c.c2w);
 	r.direction = transform_vect(dir, c.c2w);
 
 	return r;

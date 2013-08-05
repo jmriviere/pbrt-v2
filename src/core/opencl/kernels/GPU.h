@@ -9,7 +9,7 @@
 #define GPU_H_
 
 #ifndef M_PI
-#define M_PI           3.14159265358979323846
+#define M_PI           3.14159265358979323846f
 #endif
 
 #include "Random123/threefry.h"
@@ -62,6 +62,7 @@ typedef struct s_sphere {
 typedef struct s_hit {
 	int id;
 	float t;
+	bool selfisect;
 } Hit;
 
 typedef struct s_rng {

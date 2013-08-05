@@ -353,20 +353,18 @@ void UniformSampleTriangle(float u1, float u2, float *u, float *v) {
     *v = u2 * su1;
 }
 
-#include <iostream>
-
 Distribution2D::Distribution2D(const float *func, int nu, int nv) {
     pConditionalV.reserve(nv);
     for (int v = 0; v < nv; ++v) {
         // Compute conditional sampling distribution for $\tilde{v}$
         pConditionalV.push_back(new Distribution1D(&func[v*nu], nu));
     }
+
     // Compute marginal sampling distribution $p[\tilde{v}]$
     vector<float> marginalFunc;
     marginalFunc.reserve(nv);
     for (int v = 0; v < nv; ++v)
         marginalFunc.push_back(pConditionalV[v]->funcInt);
-    std::cout << "Mem dist: " << marginalFunc.size() * sizeof(float) << std::endl;
     pMarginal = new Distribution1D(&marginalFunc[0], nv);
 }
 

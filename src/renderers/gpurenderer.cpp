@@ -18,8 +18,8 @@
 #include "util.h"
 #include "accelerators/bvh.h"
 #include "imageio.h"
-#include <time.h>
-#include "HDRimage.hpp"
+
+using namespace std;
 
 static LoggerPtr logger(Logger::getLogger(__FILE__));
 
@@ -58,6 +58,8 @@ void GpuRenderer::Render(const Scene *scene) {
 	PBRT_FINISHED_PARSING();
 	PBRT_STARTED_RENDERING();
 
+	cl::Kernel k;
+
 	cl_int err;
 	Metadata meta;
 
@@ -71,22 +73,22 @@ void GpuRenderer::Render(const Scene *scene) {
 	float* env = new float[c];
 	map->toGPU(&meta, env);
 
-	float env_w = meta.dim[0];
-	float env_h = meta.dim[1];
+	uint32_t env_w = meta.dim[0];
+	uint32_t env_h = meta.dim[1];
 
 	this->meta_primitives.push_back(meta);
 
-	uint32_t nPixels = camera->film->xResolution * camera->film->yResolution;
+	uint32_t nPixels = 1024 * 512;//camera->film->xResolution * camera->film->yResolution;
 
 	cl::Event ev;
 
-	float *Ls = new float[4 * nPixels];
+	int *Ls = new int[2 * nPixels];
 
 	Host::instance().buildKernels(KERNEL_PATH);
 
-	cl::Kernel k = Host::instance().retrieveKernel("ray_cast");
+	LOG(logger, INFO, "Starting pre-processing ...");
 
-	cl::Image2D envgpu(*(Host::instance()._context), CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+	cl::Image2D envgpu(*(Host::instance()._context), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
 			cl::ImageFormat(CL_RGBA, CL_FLOAT), env_w, env_h, 0, env, &err);
 
 	if (CL_SUCCESS != err) {
@@ -113,7 +115,7 @@ void GpuRenderer::Render(const Scene *scene) {
 	}
 
 	cl::Buffer bufLs(*(Host::instance())._context, CL_MEM_WRITE_ONLY,
-			4 * nPixels * sizeof(float), NULL, &err);
+			2 * nPixels * sizeof(int), NULL, &err);
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error creating the output buffer: " << err << " at line " << __LINE__);
@@ -168,39 +170,22 @@ void GpuRenderer::Render(const Scene *scene) {
 				<< err << " at line " << __LINE__);
 	}
 
-	hdr::image i;
-	i.loadPFM("/homes/jmr12/Thesis/pbrt-v2/scenes/textures/grace_latlong.pfm");
-
-	rnd::Uniform< float, rnd::Haynes, 6364136223846793005UL, 1UL >
-	        rng( time( nullptr ) );
-
-	obj::vect< uint32_t, 2 >* samples = i.sampleEM(4096, rng);
-
-	cl::Buffer derp(*(Host::instance())._context, CL_MEM_READ_ONLY,
-			2 * 64 * sizeof(uint32_t), NULL, &err);
+	cl::Buffer buf_lum(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			env_h * env_w * sizeof(float), NULL, &err);
 
 	if (CL_SUCCESS != err) {
-		LOG(logger, ERROR, "Error creating the derp buffer: "
+		LOG(logger, ERROR, "Error creating the luminance buffer: "
 				<< err << " at line " << __LINE__);
 	}
 
-	err = Host::instance()._queue->enqueueWriteBuffer(derp, CL_TRUE, 0,
-			2 * 64 * sizeof(uint32_t),
-			samples, NULL, NULL);
+	k = Host::instance().retrieveKernel("init_luminance_pwc");
 
+	k.setArg(0, envgpu);
+	k.setArg(1, buf_lum);
+	k.setArg(2, env_w);
+	k.setArg(3, env_h);
 
-	k.setArg(0, bufLs);
-	k.setArg(1, bufCam);
-	k.setArg(2, 1);
-	k.setArg(3, (uint32_t)meta_primitives.size());
-	k.setArg(4, buf_mprims);
-	k.setArg(5, buf_prims);
-	k.setArg(6, envgpu);
-	k.setArg(7, derp);
-
-	std::cout << "derp " << env_w << " " << env_h << std::endl;
-	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
-			cl::NDRange(camera->film->xResolution, camera->film->yResolution),
+	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange, cl::NDRange(env_w, env_h),
 			cl::NullRange, NULL, &ev);
 
 	if (CL_SUCCESS != err) {
@@ -208,25 +193,177 @@ void GpuRenderer::Render(const Scene *scene) {
 				<< err << " at line " << __LINE__);
 	}
 
+	cl::Buffer buf_cdfConditionalV(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			env_h * env_w * sizeof(float), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the cdf buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+	cl::Buffer buf_cdfMarginal(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			env_h * sizeof(float), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the cdf buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+	cl::Buffer buf_pConditionalV(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			env_h * sizeof(GPUDistribution1D), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the pConditionalV buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+	cl::Buffer buf_pMarginal(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			sizeof(GPUDistribution1D), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the pConditionalV buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+	cl::Buffer buf_func1D(*(Host::instance())._context, CL_MEM_READ_WRITE,
+			env_h * sizeof(float), NULL, &err);
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error creating the func1D buffer: "
+				<< err << " at line " << __LINE__);
+	}
+
+	k = Host::instance().retrieveKernel("init_Distribution2D");
+
+	k.setArg(0, buf_lum);
+	k.setArg(1, env_w);
+	k.setArg(2, buf_cdfConditionalV);
+	k.setArg(3, buf_pConditionalV);
+	k.setArg(4, buf_func1D);
+
+	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
+			cl::NDRange(env_h),
+			cl::NullRange, NULL, &ev);
 	ev.wait();
 
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error calling the kernel: "
+				<< err << " at line " << __LINE__);
+	}
+
+	k.setArg(0, buf_func1D);
+	k.setArg(1, env_h);
+	k.setArg(2, buf_cdfMarginal);
+	k.setArg(3, buf_pMarginal);
+	k.setArg(4, NULL);
+
+	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
+			cl::NDRange(1),
+			cl::NullRange, NULL, &ev);
+	ev.wait();
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error calling the kernel: "
+				<< err << " at line " << __LINE__);
+	}
+
+	k = Host::instance().retrieveKernel("display_samples");
+
+	k.setArg(0, envgpu);
+	k.setArg(1, buf_pConditionalV);
+	k.setArg(2, buf_pMarginal);
+	k.setArg(3, buf_cdfConditionalV);
+	k.setArg(4, buf_cdfMarginal);
+	k.setArg(5, buf_lum);
+	k.setArg(6, buf_func1D);
+	k.setArg(7, bufLs);
+
+	err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
+			cl::NDRange(4096),
+			cl::NullRange, NULL, &ev);
+	ev.wait();
+
+	if (CL_SUCCESS != err) {
+		LOG(logger, ERROR, "Error calling the kernel: "
+				<< err << " at line " << __LINE__);
+	}
+
+	LOG(logger, INFO, "Pre-processing done!");
+	LOG(logger, INFO, "Ray tracing starting ...");
+
+//	k = Host::instance().retrieveKernel("ray_cast");
+//
+//	// Path tracing
+//	k.setArg(0, bufLs);
+//	k.setArg(1, bufCam);
+//	k.setArg(2, 1);
+//	k.setArg(3, (uint32_t)meta_primitives.size());
+//	k.setArg(4, buf_mprims);
+//	k.setArg(5, buf_prims);
+//	k.setArg(6, envgpu);
+//	k.setArg(7, buf_pConditionalV);
+//	k.setArg(8, buf_pMarginal);
+//	k.setArg(9, buf_cdfConditionalV);
+//	k.setArg(10, buf_cdfMarginal);
+//	k.setArg(11, buf_lum);
+//	k.setArg(12, buf_func1D);
+//
+//	int nb_im = 0;
+//
+//	cl_ulong time_start, time_end;
+//	double total_time = 0;
+////	while (1) {
+//		err = Host::instance()._queue->enqueueNDRangeKernel(k, cl::NullRange,
+//			cl::NDRange(camera->film->xResolution, camera->film->yResolution),
+//			cl::NullRange, NULL, &ev);
+//
+//		ev.wait();
+//
+//		ev.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
+//		ev.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
+//		total_time += (time_end - time_start) / 1000000000.0;
+////		cout << (time_end - time_start) << endl;
+////		nb_im++;
+//		cout << total_time << endl;
+////	}
+//
+//	if (CL_SUCCESS != err) {
+//		LOG(logger, ERROR, "Error calling the kernel: "
+//				<< err << " at line " << __LINE__);
+//	}
+
 	err = Host::instance()._queue->enqueueReadBuffer(bufLs, CL_TRUE, 0,
-			4 * nPixels * sizeof(float), Ls, NULL, NULL);
+			2 * nPixels * sizeof(int), Ls, NULL, NULL);
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error reading back from device: "
 				<< err << " at line " << __LINE__);
 	}
 
+	LOG(logger, INFO, "Ray tracing done!");
+	LOG(logger, INFO, "Writing image to disk");
+
+	for (int i = 0; i < 4096; ++i) {
+		int y = Ls[2* i];
+		int x = Ls[2 * i + 1];
+//		cout << x << " " << y << endl;
+		env[4 * (y * 1024 + x)] = 0.;
+		env[4 * (y * 1024 + x) + 1] = 0.;
+		env[4 * (y * 1024 + x) + 2] = 100000000000000.;
+		env[4 * (y * 1024 + x) + 3] = 1.;
+	}
+
 	float v[3];
 
 	int j = 0;
 
-	for (uint32_t y = 0; y < camera->film->yResolution; ++y) {
-		for (uint32_t x = 0; x < camera->film->xResolution; ++x) {
-			v[0] = Ls[j];
-			v[1] = Ls[j + 1];
-			v[2] = Ls[j + 2];
+	for (uint32_t y = 0; y < 512; ++y) {
+		for (uint32_t x = 0; x < 1024; ++x) {
+//			if (!(v[0] == 0.0 && v[1] == 0.0 && v[2] == 50.)) {
+				v[0] = env[j];//pow(env[j], 1/2.2);
+				v[1] = env[j + 1];//pow(env[j + 1], 1/2.2);
+				v[2] = env[j + 2];pow(env[j + 2], 1/2.2);
+//			}
 			j += 4;
 
 			CameraSample s;
@@ -238,6 +375,8 @@ void GpuRenderer::Render(const Scene *scene) {
 	}
 
 	camera->film->WriteImage();
+
+	LOG(logger, INFO, "Image saved!");
 
 	delete Ls;
 	delete env;

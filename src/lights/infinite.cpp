@@ -64,8 +64,6 @@ InfiniteAreaLight::~InfiniteAreaLight() {
     delete radianceMap;
 }
 
-#include <iostream>
-
 InfiniteAreaLight::InfiniteAreaLight(const Transform &light2world,
         const Spectrum &L, int ns, const string &texmap)
     : Light(light2world, ns) {
@@ -281,22 +279,27 @@ size_t InfiniteAreaLight::toGPU(Metadata* meta, void* data) const {
 		std::memcpy( &(meta->toWorld), &(LightToWorld.GetMatrix().m), sizeof(float) * 16);
 		std::memcpy( &(meta->fromWorld), &(WorldToLight.GetMatrix().m), sizeof(float) * 16);
 
-		float step_x = 1./((float) radianceMap->Width());
-		float step_y = 1./((float) radianceMap->Height());
-
 		float rgb[4];
 
-		for (uint32_t y = 0; y < radianceMap->Height(); y++) {
-			for (uint32_t x = 0; x < radianceMap->Width(); x++) {
-				Spectrum s = radianceMap->Lookup( (float) x  * step_x, (float) y * step_y);
+		uint32_t height = radianceMap->Height();
+		uint32_t width = radianceMap->Width();
+
+	    float filter = 1.f / max(width, height);
+	    for (uint32_t v = 0; v < height; ++v) {
+	        float vp = (float)v / (float)height;
+	        float sinTheta = sinf(M_PI * float(v+.5f)/float(height));
+	        for (uint32_t u = 0; u < width; ++u) {
+	            float up = (float)u / (float)width;
+	            Spectrum s = radianceMap->Lookup(up, vp, filter) * sinTheta;
 				s.ToRGB(rgb);
 				rgb[3] = 1.0;
-				std::memcpy(&((float *)data)[4 * (y * radianceMap->Width() +  x)], rgb, sizeof(rgb));
-			}
-		}
+				std::memcpy(&((float *)data)[4 * (v * radianceMap->Width() +  u)], rgb, sizeof(rgb));
+	        }
+	    }
 		meta->dim[0] = radianceMap->Width();
 		meta->dim[1] = radianceMap->Height();
 	}
+
 	return radianceMap->Height() * radianceMap->Width() * 4;
 }
 

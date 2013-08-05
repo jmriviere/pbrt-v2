@@ -66,4 +66,15 @@ typedef struct s_sphere {
 	float radius;
 } GPUSphere;
 
+typedef struct s_d1d {
+	uint32_t offset;
+	float integral;
+	uint32_t count;
+} GPUDistribution1D;
+
+typedef struct s_d2d {
+	GPUDistribution1D* pConditionalV;
+	GPUDistribution1D* pMarginal;
+} GPUDistribution2D;
+
 #endif /* UTIL_H_ */
