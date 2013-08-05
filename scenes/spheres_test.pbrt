@@ -42,10 +42,10 @@ Material "mirror"
 Shape "sphere" "float radius" [10]
 AttributeEnd
 
-#AttributeBegin
-#Translate -2 0 -0.5
-#Material "mirror"
-#Shape "sphere" "float radius" [.5]
-#AttributeEnd
+AttributeBegin
+Translate -2 0 -0.5
+Material "mirror"
+Shape "sphere" "float radius" [.5]
+AttributeEnd
 
 WorldEnd

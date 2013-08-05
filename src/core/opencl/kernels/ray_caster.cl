@@ -160,10 +160,13 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		case 0:
 			ray.direction = reflection(ray, n);
 			break;
-//////		case REFR:
+////		case REFR:
 		case 1:
-			ray.direction = refraction(&reflectance, ray, n, rng);
-			break;
+			{
+				float rand = u01_open_open_32_24(r.v[1]);
+				ray.direction = refraction(&reflectance, ray, n, rand);
+				break;
+			}
 		case 2:
 			{
 				float u1 = u01_open_open_32_24(r.v[0]);
@@ -193,29 +196,29 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 				reflectance *= 2.f * M_PI * sintheta * cosi/mapPdf;
 				break;
 			}
-//		case 3:
-//			{
-//				float eps1 = u01_open_open_32_24(r.v[1]);
-//				float eps2 = u01_open_open_32_24(r.v[2]);
-//
-//				float theta = acos(pow(eps1, 0.02f));
-//				float phi = 2.0f * M_PI * eps2;
-//
-//				float xs = sin(theta) * cos(phi);
-//				float ys = sin(theta) * sin(phi);
-//				float zs = cos(theta);
-//
-//				float3 z = reflection(ray, n);
-//				float3 w = z;
-//
-//				float3 u = (float3)normalize(cross((float3)(1, 0, 0),w));
-//				float3 v = (float3)normalize(cross(u,w));
-//
-//				ray.direction = normalize((float3)(xs * u + ys * v + zs * w));
-//				break;
-//			}
-		default:
-			break;
+		case 3:
+			{
+				float eps1 = u01_open_open_32_24(r.v[2]);
+				float eps2 = u01_open_open_32_24(r.v[3]);
+
+				float theta = acos(pow(eps1, 0.02f));
+				float phi = 2.0f * M_PI * eps2;
+
+				float xs = sin(theta) * cos(phi);
+				float ys = sin(theta) * sin(phi);
+				float zs = cos(theta);
+
+				float3 z = reflection(ray, n);
+				float3 w = z;
+
+				float3 u = (float3)normalize(cross((float3)(1, 0, 0),w));
+				float3 v = (float3)normalize(cross(u,w));
+
+				ray.direction = normalize((float3)(xs * u + ys * v + zs * w));
+				break;
+			}
+//		default:
+//			break;
 		}
 	}
 	return cl;
@@ -247,7 +250,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 	Color pixel = (Color)(0, 0, 0, 0);
 
-	spp = 4096;
+	spp = 512;
 
 	for (uint i = 0; i < spp; i++) {
 		r = threefry4x32(rng.c , rng.k);
