@@ -11,7 +11,6 @@
 #include "importance.h"
 
 inline bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global float* prims) {
-
 	Sphere sphere;
 	sphere.radius = prims[m_sphere.offset];
 
@@ -122,6 +121,8 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 	uint i = 0;
 	float3 hitpoint;
 
+	int bounces = 2;
+
 	while(true) {
 		rng->c.v[0]++;
 		rng->c.v[1]++;
@@ -129,17 +130,16 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		r = threefry4x32(rng->c, rng->k);
 
 		float rand = u01_open_open_32_24(r.v[0]);
+
 		if (!intersect(&hit, ray, meta_prims, prims, nb_prims)) {
 			ray.direction = transform_vect(ray.direction, meta_prims[nb_prims - 1].fromWorld);
 			cl += reflectance * lookup(env, ray);
 			break;
 		}
 
-		float p = min(0.5f, reflectance.s1);
-
 		if (i++ >= 3) {
-			if (rand < p) {
-				reflectance /= p;
+			if (rand < 0.4) {
+				reflectance /= 0.6;
 			}
 			else {
 				break;
@@ -159,16 +159,21 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		switch (hit.id) {
 		case 0:
 			ray.direction = reflection(ray, n);
+			bounces = 2;
 			break;
-////		case REFR:
+//		case REFR:
 		case 1:
 			{
+				bounces = 5;
 				float rand = u01_open_open_32_24(r.v[1]);
 				ray.direction = refraction(&reflectance, ray, n, rand);
 				break;
 			}
 		case 2:
+//		default:
+		diffuse:
 			{
+				bounces = 2;
 				float u1 = u01_open_open_32_24(r.v[0]);
 				float u2 = u01_open_open_32_24(r.v[1]);
 
@@ -191,30 +196,41 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 				if (cosi < 0 || mapPdf == 0.f || sintheta == 0.f)
 					continue;
+
 				ray.direction = direction;
 
 				reflectance *= 2.f * M_PI * sintheta * cosi/mapPdf;
 				break;
 			}
 		case 3:
+		default:
 			{
+				float criterion = u01_open_open_32_24(r.v[1]);
+				float3 z = reflection(ray, n);
+
 				float eps1 = u01_open_open_32_24(r.v[2]);
 				float eps2 = u01_open_open_32_24(r.v[3]);
 
 				float theta = acos(pow(eps1, 0.02f));
 				float phi = 2.0f * M_PI * eps2;
 
-				float xs = sin(theta) * cos(phi);
-				float ys = sin(theta) * sin(phi);
-				float zs = cos(theta);
+				if (criterion < 0.5f) {
+					bounces = 2;
 
-				float3 z = reflection(ray, n);
-				float3 w = z;
+					float xs = sin(theta) * cos(phi);
+					float ys = sin(theta) * sin(phi);
+					float zs = cos(theta);
 
-				float3 u = (float3)normalize(cross((float3)(1, 0, 0),w));
-				float3 v = (float3)normalize(cross(u,w));
+					float3 w = z;
 
-				ray.direction = normalize((float3)(xs * u + ys * v + zs * w));
+					float3 u = (float3)normalize(cross((float3)(1, 0, 0),w));
+					float3 v = (float3)normalize(cross(u,w));
+
+					ray.direction = normalize((float3)(xs * u + ys * v + zs * w));
+				}
+				else {
+					goto diffuse;
+				}
 				break;
 			}
 //		default:
@@ -250,7 +266,7 @@ __kernel void ray_cast(__global float4* Ls, __global GPUCamera* cam, int spp, in
 
 	Color pixel = (Color)(0, 0, 0, 0);
 
-	spp = 512;
+	spp = 256;
 
 	for (uint i = 0; i < spp; i++) {
 		r = threefry4x32(rng.c , rng.k);

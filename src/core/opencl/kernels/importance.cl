@@ -84,10 +84,11 @@ inline float2 sampleContinuous2D(float u1, float u2, __global const Distribution
 			);
 	float2 sample = (float2)(s1, s2);
 	*pdf = pdfs[0] * pdfs[1];
+
 	return sample;
 }
 
-float sampleContinuous1D(float u, Distribution1D distribution, __global const float* cdf,
+inline float sampleContinuous1D(float u, Distribution1D distribution, __global const float* cdf,
 		__global const float* func, int* offset, float* pdf) {
 	int off = upper_bound(u, &cdf[distribution.offset], distribution.count);
 	*offset = off;
@@ -96,4 +97,16 @@ float sampleContinuous1D(float u, Distribution1D distribution, __global const fl
 			(cdf[distribution.offset + off+1] - cdf[distribution.offset + off]);
 	*pdf = func[distribution.offset + off] / distribution.integral;
 	return (off + du) / distribution.count;
+}
+
+inline float probability(float u, float v, float3 direction,
+		__global const Distribution1D* pConditionalV, Distribution1D pMarginal,
+		__global const float* fun2D, __global const float* fun1D) {
+	int iu = clamp(convert_uint(u * pConditionalV[0].count), (uint)0,
+	                   pConditionalV[0].count - 1);
+	int iv = clamp(convert_uint(v * pMarginal.count), (uint)0,
+	                   pMarginal.count - 1);
+	if (pConditionalV[iv].integral * pMarginal.integral == 0.f) return 0.f;
+	return (fun2D[pConditionalV[iv].offset + iu] * fun1D[iv]) /
+			(pConditionalV[iv].integral * pMarginal.integral);
 }

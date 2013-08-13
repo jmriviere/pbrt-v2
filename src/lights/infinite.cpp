@@ -191,7 +191,6 @@ InfiniteAreaLight *CreateInfiniteLight(const Transform &light2world,
     return new InfiniteAreaLight(light2world, L * sc, nSamples, texmap);
 }
 
-
 Spectrum InfiniteAreaLight::Sample_L(const Point &p, float pEpsilon,
         const LightSample &ls, float time, Vector *wi, float *pdf,
         VisibilityTester *visibility) const {
@@ -220,6 +219,7 @@ Spectrum InfiniteAreaLight::Sample_L(const Point &p, float pEpsilon,
     return Ls;
 }
 
+#include <iostream>
 
 float InfiniteAreaLight::Pdf(const Point &, const Vector &w) const {
     PBRT_INFINITE_LIGHT_STARTED_PDF();
@@ -229,6 +229,8 @@ float InfiniteAreaLight::Pdf(const Point &, const Vector &w) const {
     if (sintheta == 0.f) return 0.f;
     float p = distribution->Pdf(phi * INV_TWOPI, theta * INV_PI) /
            (2.f * M_PI * M_PI * sintheta);
+    if (p > 10)
+    	std::cout << p << std::endl;
     PBRT_INFINITE_LIGHT_FINISHED_PDF();
     return p;
 }
