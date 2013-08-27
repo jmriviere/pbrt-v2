@@ -1,0 +1,67 @@
+LookAt 0 20 -10    0 0 0   0 0 -1
+Camera "perspective" "float fov" [22]
+
+Renderer "gpu"
+
+Film "image" "integer xresolution" [800] "integer yresolution" [400]
+"string filename" "rectangle.exr"
+
+SurfaceIntegrator "path" "integer maxdepth" [3]
+"string strategy" "all"
+
+Sampler "lowdiscrepancy" "integer pixelsamples" [32]
+PixelFilter "gaussian"
+
+WorldBegin
+
+AttributeBegin
+#Rotate 180 1 0 0
+LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
+#LightSource "infinite" "string mapname" ["textures/grace_latlong.pfm"]
+        "integer nsamples" [512]
+AttributeEnd
+
+#AttributeBegin
+#Material "matte"
+#"color Kd" [0. 0. 1.]
+#Shape "rectangle" "float radius" [0.3]
+#AttributeEnd
+
+ # AttributeBegin
+    Material "matte"
+    #this is a triangle mesh, the first set of points define four xyz 
+    #coordinates, the second set defines the mesh by indexing into
+    #those points
+  #  Shape "trianglemesh" "point P" [ -8 -10 0  8 -10 0  8 10 0  -8 10 0 ]
+   #   "integer indices" [ 0 1 2 2 3 0 ]
+  #AttributeEnd
+
+  AttributeBegin
+    Material "mirror"
+    Translate 0 0 -2
+    Shape "sphere" "float radius" [2]
+  AttributeEnd
+
+  AttributeBegin
+    Material "glass"
+    Translate -3 2 -1
+    Shape "sphere" "float radius" [1]
+  AttributeEnd
+
+AttributeBegin
+Translate 3 2 -1
+Material "substrate" "float uroughness" [0.02] "float vroughness" [0.02]
+"color Kr" [1. 1. 1.] "color Kd" [0. 1. 0.]
+Shape "sphere" "float radius" [1]
+AttributeEnd
+
+#AttributeBegin
+#Scale 0.015 0.015 0.015
+#Translate 0 350 -149
+#Rotate -180 0 1 0
+#Rotate 45 0 0 1
+#Material "matte"
+#Include "geometry/killeroo.pbrt"
+#AttributeEnd
+
+WorldEnd
