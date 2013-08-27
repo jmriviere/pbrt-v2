@@ -9,7 +9,7 @@ Film "image" "integer xresolution" [800] "integer yresolution" [400]
 SurfaceIntegrator "path" "integer maxdepth" [3]
 "string strategy" "all"
 
-Sampler "lowdiscrepancy" "integer pixelsamples" [512]
+Sampler "lowdiscrepancy" "integer pixelsamples" [4]
 #Sampler "stratified" "integer xsamples" [1] "integer ysamples" [1]
 PixelFilter "gaussian"
 
@@ -29,17 +29,17 @@ Shape "sphere" "float radius" [.5]
 AttributeEnd
 
 
-#AttributeBegin
-#Translate 1 0 -0.5
-#Material "glass"
-#Shape "sphere" "float radius" [.6]
-#AttributeEnd
+AttributeBegin
+Translate 1 0 -0.1
+Material "glass"
+Shape "sphere" "float radius" [.4]
+AttributeEnd
 
-#AttributeBegin
-#Translate 0 0 10
-#Material "matte"
-#Shape "sphere" "float radius" [10]
-#AttributeEnd
+AttributeBegin
+Translate -1 0 -0.1
+Material "glass"
+Shape "sphere" "float radius" [.4]
+AttributeEnd
 
 #AttributeBegin
 #Translate -2 0 -0.5

@@ -8,7 +8,7 @@
 #ifndef FRESNEL_H_
 #define FRESNEL_H_
 
-#include "GPU.h"
+#include "OCL.h"
 
 #define ETA_VACUUM 1.0f
 #define ETA_GLASS 1.5f

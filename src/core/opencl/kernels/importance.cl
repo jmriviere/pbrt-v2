@@ -5,7 +5,7 @@
  *      Author: jmr12
  */
 
-#include "GPU.h"
+#include "OCL.h"
 #include "importance.h"
 
 __kernel void init_luminance_pwc(__read_only image2d_t env, __global float* pw_lum,
@@ -99,14 +99,13 @@ inline float sampleContinuous1D(float u, Distribution1D distribution, __global c
 	return (off + du) / distribution.count;
 }
 
-inline float probability(float u, float v, float3 direction,
-		__global const Distribution1D* pConditionalV, Distribution1D pMarginal,
-		__global const float* fun2D, __global const float* fun1D) {
+inline float probability(float u, float v,__global const Distribution1D* pConditionalV,
+		Distribution1D pMarginal, __global const float* fun2D, __global const float* fun1D) {
 	int iu = clamp(convert_uint(u * pConditionalV[0].count), (uint)0,
 	                   pConditionalV[0].count - 1);
 	int iv = clamp(convert_uint(v * pMarginal.count), (uint)0,
 	                   pMarginal.count - 1);
 	if (pConditionalV[iv].integral * pMarginal.integral == 0.f) return 0.f;
-	return (fun2D[pConditionalV[iv].offset + iu] * fun1D[iv]) /
-			(pConditionalV[iv].integral * pMarginal.integral);
+	return ((fun2D[pConditionalV[iv].offset + iu] * fun1D[iv]) /
+		(pConditionalV[iv].integral * pMarginal.integral));
 }

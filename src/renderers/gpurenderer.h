@@ -18,7 +18,8 @@
 class GpuRenderer : public Renderer {
 public:
     // SamplerRenderer Public Methods
-    GpuRenderer(std::vector<Light*> lights,std::vector<Reference<Shape> > primitives, Sampler *s, Camera *c, bool visIds);
+    GpuRenderer(std::vector<Light*> lights,std::vector<Reference<Shape> > primitives,
+    			Sampler *s, Camera *c, bool visIds);
     ~GpuRenderer();
     void Render(const Scene *scene);
     Spectrum Li(const Scene *scene, const RayDifferential &ray,
@@ -27,7 +28,7 @@ public:
     Spectrum Transmittance(const Scene *scene, const RayDifferential &ray,
         const Sample *sample, RNG &rng, MemoryArena &arena) const;
 private:
-    // SamplerRenderer Private Data
+    Sampler *sampler;
     bool visualizeObjectIds;
     Camera *camera;
 

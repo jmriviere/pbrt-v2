@@ -8,16 +8,16 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
-#include "GPU.h"
+#include "OCL.h"
 
 typedef struct __attribute__ ((packed)) s_camera {
 
 	Transformation r2c;
 	Transformation c2w;
 
-} GPUCamera;
+} OCLCamera;
 
-Ray generate_ray(GPUCamera c, float2 raster) {
+Ray generate_ray(OCLCamera c, float2 raster) {
 	Ray r;
 
 	float3 Praster = (float3)(raster, 0);

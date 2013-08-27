@@ -28,6 +28,7 @@ GpuRenderer::GpuRenderer(std::vector<Light*> lights, std::vector<Reference<Shape
 		Sampler *s, Camera *c, bool visIds)  {
 	BasicConfigurator::configure();
 	camera = c;
+	sampler = s;
 	visualizeObjectIds = visIds;
 
 	Metadata* meta;
@@ -52,6 +53,7 @@ GpuRenderer::GpuRenderer(std::vector<Light*> lights, std::vector<Reference<Shape
 
 GpuRenderer::~GpuRenderer() {
 	delete camera;
+	delete sampler;
 }
 
 void GpuRenderer::Render(const Scene *scene) {
@@ -275,17 +277,18 @@ void GpuRenderer::Render(const Scene *scene) {
 	// Path tracing
 	k.setArg(0, bufLs);
 	k.setArg(1, bufCam);
-	k.setArg(2, 1);
-	k.setArg(3, (uint32_t)meta_primitives.size());
-	k.setArg(4, buf_mprims);
-	k.setArg(5, buf_prims);
-	k.setArg(6, envgpu);
-	k.setArg(7, buf_pConditionalV);
-	k.setArg(8, buf_pMarginal);
-	k.setArg(9, buf_cdfConditionalV);
-	k.setArg(10, buf_cdfMarginal);
-	k.setArg(11, buf_lum);
-	k.setArg(12, buf_func1D);
+	k.setArg(2, camera->film->xResolution);
+	k.setArg(3, sampler->samplesPerPixel);
+	k.setArg(4, (uint32_t)meta_primitives.size());
+	k.setArg(5, buf_mprims);
+	k.setArg(6, buf_prims);
+	k.setArg(7, envgpu);
+	k.setArg(8, buf_pConditionalV);
+	k.setArg(9, buf_pMarginal);
+	k.setArg(10, buf_cdfConditionalV);
+	k.setArg(11, buf_cdfMarginal);
+	k.setArg(12, buf_lum);
+	k.setArg(13, buf_func1D);
 
 	int nb_im = 0;
 
