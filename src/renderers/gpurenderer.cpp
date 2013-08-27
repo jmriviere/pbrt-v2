@@ -65,7 +65,7 @@ void GpuRenderer::Render(const Scene *scene) {
 	cl_int err;
 	Metadata meta;
 
-	GPUCamera gpuC = camera->toGPU();
+	OCLCamera gpuC = camera->toRawData();
 
 	Light* map = scene->lights[0];
 
@@ -124,14 +124,14 @@ void GpuRenderer::Render(const Scene *scene) {
 	}
 
 	cl::Buffer bufCam(*(Host::instance())._context, CL_MEM_READ_ONLY,
-			sizeof(GPUCamera), NULL, &err);
+			sizeof(OCLCamera), NULL, &err);
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error creating the camera buffer: " << err << " at line " << __LINE__);
 	}
 
 	err = Host::instance()._queue->enqueueWriteBuffer(bufCam, CL_TRUE, 0,
-			sizeof(GPUCamera), &gpuC, NULL, NULL);
+			sizeof(OCLCamera), &gpuC, NULL, NULL);
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error writing the camera buffer to device memory: "
@@ -139,7 +139,7 @@ void GpuRenderer::Render(const Scene *scene) {
 	}
 
 	cl::Buffer buf_prims(*(Host::instance())._context, CL_MEM_READ_ONLY,
-			primitives.size() * sizeof(GPUSphere), NULL, &err);
+			primitives.size() * sizeof(OCLSphere), NULL, &err);
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error creating the raw data buffer: "
@@ -147,7 +147,7 @@ void GpuRenderer::Render(const Scene *scene) {
 	}
 
 	err = Host::instance()._queue->enqueueWriteBuffer(buf_prims, CL_TRUE, 0,
-			primitives.size() * sizeof(GPUSphere),
+			primitives.size() * sizeof(OCLSphere),
 			&primitives[0], NULL, NULL);
 
 	if (CL_SUCCESS != err) {
@@ -212,7 +212,7 @@ void GpuRenderer::Render(const Scene *scene) {
 	}
 
 	cl::Buffer buf_pConditionalV(*(Host::instance())._context, CL_MEM_READ_WRITE,
-			env_h * sizeof(GPUDistribution1D), NULL, &err);
+			env_h * sizeof(OCLDistribution1D), NULL, &err);
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error creating the pConditionalV buffer: "
@@ -220,7 +220,7 @@ void GpuRenderer::Render(const Scene *scene) {
 	}
 
 	cl::Buffer buf_pMarginal(*(Host::instance())._context, CL_MEM_READ_WRITE,
-			sizeof(GPUDistribution1D), NULL, &err);
+			sizeof(OCLDistribution1D), NULL, &err);
 
 	if (CL_SUCCESS != err) {
 		LOG(logger, ERROR, "Error creating the pConditionalV buffer: "
@@ -361,7 +361,3 @@ Spectrum GpuRenderer::Transmittance(const Scene *scene, const RayDifferential &r
 		const Sample *sample, RNG &rng, MemoryArena &arena) const {
 	return Spectrum(1.0f);
 }
-
-/*GpuRenderer* CreateGpuRenderer(const ParamSet &params, Camera *camera) {
-
-}*/

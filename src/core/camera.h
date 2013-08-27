@@ -52,7 +52,7 @@ public:
     virtual float GenerateRay(const CameraSample &sample,
                               Ray *ray) const = 0;
     virtual float GenerateRayDifferential(const CameraSample &sample, RayDifferential *rd) const;
-    virtual GPUCamera toGPU() const;
+    virtual OCLCamera toRawData() const;
 
     // Camera Public Data
     AnimatedTransform CameraToWorld;

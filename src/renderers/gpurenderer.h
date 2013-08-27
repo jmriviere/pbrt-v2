@@ -36,8 +36,6 @@ private:
     std::vector<float> primitives;
 };
 
-//GpuRenderer *CreateGpuRenderer(const ParamSet &params, Camera *camera);
-
 
 
 #endif /* GPURENDERER_H_ */

@@ -154,8 +154,8 @@ PerspectiveCamera *CreatePerspectiveCamera(const ParamSet &params,
         shutterclose, lensradius, focaldistance, fov, film);
 }
 
-GPUCamera PerspectiveCamera::toGPU() const {
-	GPUCamera ret;
+OCLCamera PerspectiveCamera::toRawData() const {
+	OCLCamera ret;
 
 	memcpy(&ret.r2c, &(RasterToCamera.GetMatrix().m), sizeof(float) * 16);
 	memcpy(&ret.c2w, &(CameraToWorld.startTransform->GetMatrix().m), sizeof(float) * 16);

@@ -241,7 +241,7 @@ endif
 $(RENDERER_BINARY): $(RENDERER_OBJS) $(CORE_LIB)
 
 clean:
-	rm -f objs/* bin/* $(SRC)/core/pbrtlex.[ch]* $(SRC)/core/pbrtparse.[ch]* tests/*
+	rm -f objs/* bin/bsdftest bin/exravg bin/exrdiff bin/oclcheck bin/pbrt $(SRC)/core/pbrtlex.[ch]* $(SRC)/core/pbrtparse.[ch]* tests/*
 
 gtest:
 	@echo "Building $@";

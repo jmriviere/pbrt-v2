@@ -15,7 +15,7 @@
 using namespace log4cxx;
 using namespace log4cxx::xml;
 
-#define KERNEL_PATH "/homes/jmr12/Thesis/pbrt-v2/src/core/opencl/kernels"
+#define KERNEL_PATH "./kernels"
 
 #ifdef DEBUG
 #define LOG(log,lvl,msg) LOG4CXX_##lvl(log,msg)
@@ -23,12 +23,12 @@ using namespace log4cxx::xml;
 #define LOG(log,lvl,msg)
 #endif
 
-enum GPUType {
+enum OCLType {
 	sphere = 0,
 	light = 1
 };
 
-enum GPUMaterial {
+enum OCLMaterial {
 	DIFF = 0,
 	SPEC = 1,
 	REFR = 2
@@ -36,45 +36,38 @@ enum GPUMaterial {
 
 #pragma pack(push, 1)
 
-typedef struct s_ray {
-	float origin[3];
-	float dummy;
-	float direction[3];
-	float dummy2;
-} gpu_Ray;
-
 // Describes how to access data about light and primitives
 typedef struct s_metadata {
 	float toWorld[16];
 	float fromWorld[16];
-	GPUType type;
+	OCLType type;
 	uint32_t offset;
 	union {
 		uint32_t dim[2]; // Light dimensions
-		GPUMaterial mat; // Object material
+		OCLMaterial mat; // Object material
 	};
 } Metadata;
 
 typedef struct s_camera {
 	float r2c[16];
 	float c2w[16];
-} GPUCamera;
+} OCLCamera;
 
 #pragma pack(pop)
 
 typedef struct s_sphere {
 	float radius;
-} GPUSphere;
+} OCLSphere;
 
 typedef struct s_d1d {
 	uint32_t offset;
 	float integral;
 	uint32_t count;
-} GPUDistribution1D;
+} OCLDistribution1D;
 
 typedef struct s_d2d {
-	GPUDistribution1D* pConditionalV;
-	GPUDistribution1D* pMarginal;
-} GPUDistribution2D;
+	OCLDistribution1D* pConditionalV;
+	OCLDistribution1D* pMarginal;
+} OCLDistribution2D;
 
 #endif /* UTIL_H_ */
