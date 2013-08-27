@@ -15,7 +15,7 @@
 using namespace log4cxx;
 using namespace log4cxx::xml;
 
-#define KERNEL_PATH "./kernels"
+#define KERNEL_PATH "./src/core/opencl/kernels"
 
 #ifdef DEBUG
 #define LOG(log,lvl,msg) LOG4CXX_##lvl(log,msg)

@@ -104,6 +104,12 @@ void TriangleMesh::Refine(vector<Reference<Shape> > &refined) const {
                           (TriangleMesh *)this, i));
 }
 
+#include <iostream>
+
+uint32_t TriangleMesh::toRawData(Metadata* meta, void* data) const {
+  std::cout << "mesh " << ntris << " " << nverts << std::endl;
+}
+
 
 BBox Triangle::ObjectBound() const {
     // Get triangle vertices in _p1_, _p2_, and _p3_

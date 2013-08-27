@@ -988,7 +988,6 @@ void pbrtAreaLightSource(const string &name,
     graphicsState.areaLightParams = params;
 }
 
-
 void pbrtShape(const string &name, const ParamSet &params) {
     VERIFY_WORLD("Shape");
     Reference<Primitive> prim;
@@ -1012,7 +1011,6 @@ void pbrtShape(const string &name, const ParamSet &params) {
         OCLprims.push_back(new GeometricPrimitive(shape, mtl, area));
     } else {
         // Create primitive for animated shape
-
         // Create initial _Shape_ for animated shape
         if (graphicsState.areaLight != "")
             Warning("Ignoring currently set area light when creating "

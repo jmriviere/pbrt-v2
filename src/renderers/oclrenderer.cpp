@@ -36,12 +36,15 @@ OCLRenderer::OCLRenderer(std::vector<Light*> lights, std::vector<Reference<Geome
 
 	uint32_t offset = 0;
 
+	std::cout << "Nb prims: " << primitives.size() << std::endl;
+
 	for (std::vector<Reference<GeometricPrimitive> >::iterator it = primitives.begin();
 			it != primitives.end(); ++it) {
 		meta = new Metadata();
 		uint32_t c = (*it)->toRawData(meta, NULL);
 		data = new float[c];
 		c = (*it)->toRawData(meta, data);
+		std::cout << "offset " << c << std::endl;
 		meta->offset = offset;
 		offset += c;
 		meta_primitives.push_back(*meta);

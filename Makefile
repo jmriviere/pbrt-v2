@@ -102,11 +102,11 @@ endif
 
 all: default
 
-default: dirs bin/pbrt $(TOOLS) #gtest
+default: dirs $(TOOLS) pbrt #gtest
 
 bin/%: dirs
 
-pbrt: bin/pbrt
+#pbrt: bin/pbrt
 
 dirs:
 	/bin/mkdir -p bin objs tests
@@ -209,7 +209,11 @@ objs/tools_%.o: $(SRC)/tools/%.cpp
 	@$(CXX) $(CCFLAGS) -c $< -MM -MF $@.d
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-bin/pbrt: objs/main_pbrt.o objs/libpbrt.a
+#bin/pbrt: objs/main_pbrt.o objs/libpbrt.a
+#	@echo "Linking $@"
+#	@$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
+
+pbrt: objs/main_pbrt.o objs/libpbrt.a
 	@echo "Linking $@"
 	@$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 

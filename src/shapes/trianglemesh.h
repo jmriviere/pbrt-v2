@@ -54,6 +54,7 @@ public:
     BBox WorldBound() const;
     bool CanIntersect() const { return false; }
     void Refine(vector<Reference<Shape> > &refined) const;
+    uint32_t toRawData(Metadata* meta, void* data) const;
     friend class Triangle;
     template <typename T> friend class VertexTexture;
 
