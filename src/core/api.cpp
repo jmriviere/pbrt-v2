@@ -110,7 +110,6 @@
 #include "shapes/paraboloid.h"
 #include "shapes/sphere.h"
 #include "shapes/trianglemesh.h"
-#include "shapes/rectangle.h"
 #include "textures/bilerp.h"
 #include "textures/checkerboard.h"
 #include "textures/constant.h"
@@ -284,7 +283,7 @@ static vector<GraphicsState> pushedGraphicsStates;
 static vector<TransformSet> pushedTransforms;
 static vector<uint32_t> pushedActiveTransformBits;
 static TransformCache transformCache;
-static vector<Reference<Shape> > shapes;
+static vector<Reference<GeometricPrimitive> > OCLprims;
 
 // API Macros
 #define VERIFY_INITIALIZED(func) \
@@ -352,9 +351,6 @@ Reference<Shape> MakeShape(const string &name,
                                   paramSet);
     else if (name == "nurbs")
         s = CreateNURBSShape(object2world, world2object, reverseOrientation,
-                             paramSet);
-    else if (name == "rectangle")
-        s = CreateRectangleShape(object2world, world2object, reverseOrientation,
                              paramSet);
     else
         Warning("Shape \"%s\" unknown.", name.c_str());
@@ -1003,7 +999,6 @@ void pbrtShape(const string &name, const ParamSet &params) {
         transformCache.Lookup(curTransform[0], &obj2world, &world2obj);
         Reference<Shape> shape = MakeShape(name, obj2world, world2obj,
             graphicsState.reverseOrientation, params);
-        shapes.push_back(shape);
         if (!shape) return;
         Reference<Material> mtl = graphicsState.CreateMaterial(params);
         params.ReportUnused();
@@ -1014,6 +1009,7 @@ void pbrtShape(const string &name, const ParamSet &params) {
                                  graphicsState.areaLightParams, shape);
         }
         prim = new GeometricPrimitive(shape, mtl, area);
+        OCLprims.push_back(new GeometricPrimitive(shape, mtl, area));
     } else {
         // Create primitive for animated shape
 
@@ -1254,7 +1250,7 @@ Renderer *RenderOptions::MakeRenderer() const {
     	Sampler *sampler = MakeSampler(SamplerName, SamplerParams, camera->film, camera);
     	if (lights.size() > 1)
     		Severe("Only one light can be defined, of type: InfiniteLight");
-    	renderer = new OCLRenderer(lights, primitives, sampler, camera, false);
+    	renderer = new OCLRenderer(lights, OCLprims, sampler, camera, false);
     }
     else {
         if (RendererName != "sampler")

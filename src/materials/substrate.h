@@ -54,6 +54,8 @@ public:
         bumpMap = bump;
     }
     BSDF *GetBSDF(const DifferentialGeometry &dgGeom, const DifferentialGeometry &dgShading, MemoryArena &arena) const;
+
+    OCLMaterial Type() const;
 private:
     // SubstrateMaterial Private Data
     Reference<Texture<Spectrum> > Kd, Ks;

@@ -52,6 +52,8 @@ public:
     BSDF *GetBSDF(const DifferentialGeometry &dgGeom,
                   const DifferentialGeometry &dgShading,
                   MemoryArena &arena) const;
+
+    OCLMaterial Type() const;
 private:
     // MatteMaterial Private Data
     Reference<Texture<Spectrum> > Kd;

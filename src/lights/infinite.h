@@ -62,7 +62,7 @@ public:
     void SHProject(const Point &p, float pEpsilon, int lmax, const Scene *scene,
         bool computeLightVis, float time, RNG &rng, Spectrum *coeffs) const;
 
-    size_t toRawData(Metadata* meta, void* data) const;
+    uint32_t toRawData(Metadata* meta, void* data) const;
 private:
     // InfiniteAreaLight Private Data
     MIPMap<RGBSpectrum> *radianceMap;

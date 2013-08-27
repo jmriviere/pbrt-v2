@@ -179,6 +179,6 @@ float ShapeSet::Pdf(const Point &p) const {
     return pdf / sumArea;
 }
 
-size_t Light::toRawData(Metadata* meta, void* data) const {
+uint32_t Light::toRawData(Metadata* meta, void* data) const {
 	Severe("GPU implementation can only account for one InfiniteAreaLight");
 }

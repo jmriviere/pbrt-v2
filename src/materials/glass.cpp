@@ -67,4 +67,6 @@ GlassMaterial *CreateGlassMaterial(const Transform &xform,
     return new GlassMaterial(Kr, Kt, index, bumpMap);
 }
 
-
+OCLMaterial GlassMaterial::Type() const {
+	return REFR;
+}

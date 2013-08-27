@@ -271,7 +271,7 @@ Spectrum InfiniteAreaLight::Sample_L(const Scene *scene,
     return Ls;
 }
 
-size_t InfiniteAreaLight::toRawData(Metadata* meta, void* data) const {
+uint32_t InfiniteAreaLight::toRawData(Metadata* meta, void* data) const {
 	if (NULL != data) {
 		meta->type = light;
 		std::memcpy( &(meta->toWorld), &(LightToWorld.GetMatrix().m), sizeof(float) * 16);

@@ -62,4 +62,6 @@ MirrorMaterial *CreateMirrorMaterial(const Transform &xform,
     return new MirrorMaterial(Kr, bumpMap);
 }
 
-
+OCLMaterial MirrorMaterial::Type() const {
+	return SPEC;
+}

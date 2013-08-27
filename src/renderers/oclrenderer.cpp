@@ -24,7 +24,7 @@ using namespace std;
 static LoggerPtr logger(Logger::getLogger(__FILE__));
 
 // SamplerRenderer Method Definitions
-OCLRenderer::OCLRenderer(std::vector<Light*> lights, std::vector<Reference<Primitive> > primitives,
+OCLRenderer::OCLRenderer(std::vector<Light*> lights, std::vector<Reference<GeometricPrimitive> > primitives,
 		Sampler *s, Camera *c, bool visIds)  {
 	BasicConfigurator::configure();
 	camera = c;
@@ -36,17 +36,12 @@ OCLRenderer::OCLRenderer(std::vector<Light*> lights, std::vector<Reference<Primi
 
 	uint32_t offset = 0;
 
-	for (std::vector<Reference<Shape> >::iterator it = primitives.begin();
+	for (std::vector<Reference<GeometricPrimitive> >::iterator it = primitives.begin();
 			it != primitives.end(); ++it) {
-		(*it)->
-		meta = new Metadata;
-		uint32_t c = (*it)->toRawData(meta, NULL);
-		data = new float[c];
-		c = (*it)->toRawData(meta, data);
+		meta = new Metadata();
+		uint32_t c = (*it)->toRawData(meta, data);
 		meta->offset = offset;
 		offset += c;
-		this->meta_primitives.push_back(*meta);
-		this->primitives.push_back(*data);
 		delete meta;
 	}
 }
@@ -70,7 +65,7 @@ void OCLRenderer::Render(const Scene *scene) {
 
 	Light* map = scene->lights[0];
 
-	size_t c = map->toRawData(&meta, NULL);
+	uint32_t c = map->toRawData(&meta, NULL);
 
 
 	float* env = new float[c];

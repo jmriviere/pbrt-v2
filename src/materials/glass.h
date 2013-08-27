@@ -52,6 +52,8 @@ public:
         bumpMap = bump;
     }
     BSDF *GetBSDF(const DifferentialGeometry &dgGeom, const DifferentialGeometry &dgShading, MemoryArena &arena) const;
+
+    OCLMaterial Type() const;
 private:
     // GlassMaterial Private Data
     Reference<Texture<Spectrum> > Kr, Kt;

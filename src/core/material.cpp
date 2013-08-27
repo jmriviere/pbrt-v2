@@ -84,4 +84,7 @@ void Material::Bump(const Reference<Texture<float> > &d,
     dgBump->nn = Faceforward(dgBump->nn, dgGeom.nn);
 }
 
+OCLMaterial Material::Type() const {
+	Severe("Not implemented");
+}
 

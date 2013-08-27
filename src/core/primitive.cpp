@@ -153,7 +153,6 @@ void GeometricPrimitive::
     }
 }
 
-
 GeometricPrimitive::GeometricPrimitive(const Reference<Shape> &s,
         const Reference<Material> &m, AreaLight *a)
     : shape(s), material(m), areaLight(a) {
@@ -198,4 +197,10 @@ BSSRDF *GeometricPrimitive::GetBSSRDF(const DifferentialGeometry &dg,
     return material->GetBSSRDF(dg, dgs, arena);
 }
 
-
+uint32_t GeometricPrimitive::toRawData(Metadata* meta, void* data) const {
+	uint32_t c = shape->toRawData(meta, NULL);
+	data = new float[c];
+	c = shape->toRawData(meta, data);
+	meta->mat = material->Type();
+	return c;
+}

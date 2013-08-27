@@ -39,6 +39,7 @@
 // core/material.h*
 #include "pbrt.h"
 #include "memory.h"
+#include "util.h"
 
 // Material Declarations
 class Material : public ReferenceCounted {
@@ -55,6 +56,8 @@ public:
     virtual ~Material();
     static void Bump(const Reference<Texture<float> > &d, const DifferentialGeometry &dgGeom,
         const DifferentialGeometry &dgShading, DifferentialGeometry *dgBump);
+
+    virtual OCLMaterial Type() const;
 };
 
 

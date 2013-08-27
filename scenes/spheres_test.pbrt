@@ -1,7 +1,7 @@
 LookAt 0 5 0    0 0 0   0 0 -1
 Camera "perspective" "float fov" [22]
 
-Renderer "gpu"
+Renderer "ocl"
 
 Film "image" "integer xresolution" [800] "integer yresolution" [400]
 "string filename" "gpu.exr"

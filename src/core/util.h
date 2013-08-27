@@ -31,7 +31,8 @@ enum OCLType {
 enum OCLMaterial {
 	DIFF = 0,
 	SPEC = 1,
-	REFR = 2
+	REFR = 2,
+	ROUGH = 3
 };
 
 #pragma pack(push, 1)

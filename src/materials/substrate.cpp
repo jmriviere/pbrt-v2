@@ -68,4 +68,6 @@ SubstrateMaterial *CreateSubstrateMaterial(const Transform &xform,
     return new SubstrateMaterial(Kd, Ks, uroughness, vroughness, bumpMap);
 }
 
-
+OCLMaterial SubstrateMaterial::Type() const {
+	return ROUGH;
+}

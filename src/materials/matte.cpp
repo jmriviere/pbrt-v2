@@ -71,4 +71,6 @@ MatteMaterial *CreateMatteMaterial(const Transform &xform,
     return new MatteMaterial(Kd, sigma, bumpMap);
 }
 
-
+OCLMaterial MatteMaterial::Type() const {
+	return DIFF;
+}

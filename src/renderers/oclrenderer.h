@@ -18,7 +18,7 @@
 class OCLRenderer : public Renderer {
 public:
     // SamplerRenderer Public Methods
-    OCLRenderer(std::vector<Light*> lights,std::vector<Reference<Shape> > primitives,
+    OCLRenderer(std::vector<Light*> lights,std::vector<Reference<GeometricPrimitive> > primitives,
     			Sampler *s, Camera *c, bool visIds);
     ~OCLRenderer();
     void Render(const Scene *scene);
