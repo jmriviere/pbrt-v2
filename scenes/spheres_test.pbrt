@@ -9,7 +9,7 @@ Film "image" "integer xresolution" [800] "integer yresolution" [400]
 SurfaceIntegrator "path" "integer maxdepth" [3]
 "string strategy" "all"
 
-Sampler "lowdiscrepancy" "integer pixelsamples" [4]
+Sampler "lowdiscrepancy" "integer pixelsamples" [256]
 #Sampler "stratified" "integer xsamples" [1] "integer ysamples" [1]
 PixelFilter "gaussian"
 
@@ -25,14 +25,14 @@ AttributeEnd
 AttributeBegin
 Scale 2 2 2
 #Translate -1 0 -0.5
-Material "mirror"
+Material "matte"
 Shape "sphere" "float radius" [.5]
 AttributeEnd
 
 
 AttributeBegin
 Translate 1 0 -0.1
-Material "glass"
+Material "mirror"
 Shape "sphere" "float radius" [.4]
 AttributeEnd
 

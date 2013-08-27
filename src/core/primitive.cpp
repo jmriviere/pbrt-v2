@@ -198,9 +198,7 @@ BSSRDF *GeometricPrimitive::GetBSSRDF(const DifferentialGeometry &dg,
 }
 
 uint32_t GeometricPrimitive::toRawData(Metadata* meta, void* data) const {
-	uint32_t c = shape->toRawData(meta, NULL);
-	data = new float[c];
-	c = shape->toRawData(meta, data);
+	uint32_t c = shape->toRawData(meta, data);
 	meta->mat = material->Type();
 	return c;
 }
