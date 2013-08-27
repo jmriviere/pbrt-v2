@@ -42,6 +42,8 @@ OCLRenderer::OCLRenderer(std::vector<Light*> lights, std::vector<Reference<Geome
 		uint32_t c = (*it)->toRawData(meta, data);
 		meta->offset = offset;
 		offset += c;
+		meta_primitives.push_back(*meta);
+		this->primitives.push_back(*data);
 		delete meta;
 	}
 }
