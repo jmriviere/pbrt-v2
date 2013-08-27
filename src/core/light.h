@@ -78,7 +78,7 @@ public:
     // Light Public Data
     const int nSamples;
 
-    virtual size_t toGPU(Metadata* meta, void* data) const;
+    virtual size_t toRawData(Metadata* meta, void* data) const;
 protected:
     // Light Protected Data
     const Transform LightToWorld, WorldToLight;

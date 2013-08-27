@@ -273,7 +273,7 @@ float Sphere::Pdf(const Point &p, const Vector &wi) const {
     return UniformConePdf(cosThetaMax);
 }
 
-uint32_t Sphere::toGPU(Metadata* meta, void* data) const {
+uint32_t Sphere::toRawData(Metadata* meta, void* data) const {
 	if (data != NULL) {
 		meta->type = sphere;
 		std::memcpy( &(meta->toWorld), &(ObjectToWorld->GetMatrix().m), sizeof(float) * 16);

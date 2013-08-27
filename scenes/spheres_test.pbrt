@@ -23,6 +23,7 @@ LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
 AttributeEnd
 
 AttributeBegin
+Scale 2 2 2
 #Translate -1 0 -0.5
 Material "mirror"
 Shape "sphere" "float radius" [.5]

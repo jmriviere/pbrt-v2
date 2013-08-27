@@ -219,8 +219,6 @@ Spectrum InfiniteAreaLight::Sample_L(const Point &p, float pEpsilon,
     return Ls;
 }
 
-#include <iostream>
-
 float InfiniteAreaLight::Pdf(const Point &, const Vector &w) const {
     PBRT_INFINITE_LIGHT_STARTED_PDF();
     Vector wi = WorldToLight(w);
@@ -229,8 +227,6 @@ float InfiniteAreaLight::Pdf(const Point &, const Vector &w) const {
     if (sintheta == 0.f) return 0.f;
     float p = distribution->Pdf(phi * INV_TWOPI, theta * INV_PI) /
            (2.f * M_PI * M_PI * sintheta);
-    if (p > 10)
-    	std::cout << p << std::endl;
     PBRT_INFINITE_LIGHT_FINISHED_PDF();
     return p;
 }
@@ -275,7 +271,7 @@ Spectrum InfiniteAreaLight::Sample_L(const Scene *scene,
     return Ls;
 }
 
-size_t InfiniteAreaLight::toGPU(Metadata* meta, void* data) const {
+size_t InfiniteAreaLight::toRawData(Metadata* meta, void* data) const {
 	if (NULL != data) {
 		meta->type = light;
 		std::memcpy( &(meta->toWorld), &(LightToWorld.GetMatrix().m), sizeof(float) * 16);

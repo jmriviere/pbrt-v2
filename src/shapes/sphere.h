@@ -36,7 +36,6 @@
 #ifndef PBRT_SHAPES_SPHERE_H
 #define PBRT_SHAPES_SPHERE_H
 
-// shapes/sphere.h*
 #include "shape.h"
 
 // Sphere Declarations
@@ -54,7 +53,7 @@ public:
     Point Sample(const Point &p, float u1, float u2, Normal *ns) const;
     float Pdf(const Point &p, const Vector &wi) const;
 
-    uint32_t toGPU(Metadata* meta, void* data) const;
+    uint32_t toRawData(Metadata* meta, void* data) const;
 private:
     // Sphere Private Data
     float radius;

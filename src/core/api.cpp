@@ -93,7 +93,7 @@
 #include "renderers/metropolis.h"
 #include "renderers/samplerrenderer.h"
 #include "renderers/surfacepoints.h"
-#include "renderers/gpurenderer.h"
+#include "renderers/oclrenderer.h"
 #include "samplers/adaptive.h"
 #include "samplers/bestcandidate.h"
 #include "samplers/halton.h"
@@ -110,6 +110,7 @@
 #include "shapes/paraboloid.h"
 #include "shapes/sphere.h"
 #include "shapes/trianglemesh.h"
+#include "shapes/rectangle.h"
 #include "textures/bilerp.h"
 #include "textures/checkerboard.h"
 #include "textures/constant.h"
@@ -351,6 +352,9 @@ Reference<Shape> MakeShape(const string &name,
                                   paramSet);
     else if (name == "nurbs")
         s = CreateNURBSShape(object2world, world2object, reverseOrientation,
+                             paramSet);
+    else if (name == "rectangle")
+        s = CreateRectangleShape(object2world, world2object, reverseOrientation,
                              paramSet);
     else
         Warning("Shape \"%s\" unknown.", name.c_str());
@@ -1246,11 +1250,11 @@ Renderer *RenderOptions::MakeRenderer() const {
         renderer = CreateSurfacePointsRenderer(RendererParams, pCamera, camera->shutterOpen);
         RendererParams.ReportUnused();
     }
-    else if (RendererName == "gpu") {
+    else if (RendererName == "ocl") {
     	Sampler *sampler = MakeSampler(SamplerName, SamplerParams, camera->film, camera);
     	if (lights.size() > 1)
     		Severe("Only one light can be defined, of type: InfiniteLight");
-    	renderer = new GpuRenderer(lights, shapes, sampler, camera, false);
+    	renderer = new OCLRenderer(lights, primitives, sampler, camera, false);
     }
     else {
         if (RendererName != "sampler")
