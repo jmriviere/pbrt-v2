@@ -9,7 +9,7 @@ Film "image" "integer xresolution" [800] "integer yresolution" [400]
 SurfaceIntegrator "path" "integer maxdepth" [3]
 "string strategy" "all"
 
-Sampler "lowdiscrepancy" "integer pixelsamples" [32]
+Sampler "lowdiscrepancy" "integer pixelsamples" [64]
 #Sampler "stratified" "integer xsamples" [1] "integer ysamples" [1]
 PixelFilter "gaussian"
 
@@ -17,7 +17,7 @@ WorldBegin
 
 AttributeBegin
 #Rotate 180 1 0 0
-LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
+LightSource "infinite" "string mapname" ["textures/uffizi_latlong.exr"]
 #LightSource "infinite" "string mapname" ["textures/grace_latlong.pfm"]
         "integer nsamples" [512]
 AttributeEnd
