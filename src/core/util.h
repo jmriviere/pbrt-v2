@@ -25,7 +25,8 @@ using namespace log4cxx::xml;
 
 enum OCLType {
 	sphere = 0,
-	light = 1
+	trianglemesh = 1,
+	light = 2
 };
 
 enum OCLMaterial {

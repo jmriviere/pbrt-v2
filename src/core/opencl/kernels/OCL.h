@@ -26,7 +26,8 @@ __constant sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE |
 
 typedef enum OCLType {
 	sphere = 0,
-	light = 1
+	trianglemesh = 1,
+	light = 2
 } OCLType;
 
 typedef enum OCLMaterial {

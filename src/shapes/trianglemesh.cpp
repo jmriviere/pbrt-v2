@@ -108,6 +108,13 @@ void TriangleMesh::Refine(vector<Reference<Shape> > &refined) const {
 
 uint32_t TriangleMesh::toRawData(Metadata* meta, void* data) const {
   std::cout << "mesh " << ntris << " " << nverts << std::endl;
+  if (data != NULL) {
+	  meta->type = trianglemesh;
+		std::memcpy( data, (float*)vertexIndex, sizeof(float) * ntris * 3);
+		std::memcpy( data + sizeof(float) * ntris * 3, n, sizeof(float) * ntris);
+		std::memcpy( data + sizeof(float) * 4 * ntris, p, sizeof(float) * nverts);
+  }
+  return 4 * ntris + nverts;
 }
 
 
