@@ -13,7 +13,7 @@
 #include "fresnel.h"
 #include "camera.h"
 
-__constant float2 sph_coord = (float2)(M_PI, 2.f * M_PI);
+__constant float2 sph_coord = (float2)(2.f * M_PI, M_PI);
 
 bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __global float* prims);
 

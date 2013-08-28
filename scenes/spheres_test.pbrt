@@ -1,15 +1,15 @@
 LookAt 0 5 0    0 0 0   0 0 -1
 Camera "perspective" "float fov" [22]
 
-Renderer "ocl"
+#Renderer "ocl"
 
 Film "image" "integer xresolution" [800] "integer yresolution" [400]
-"string filename" "gpu.exr"
+#"string filename" "gpu.exr"
 
 SurfaceIntegrator "path" "integer maxdepth" [3]
 "string strategy" "all"
 
-Sampler "lowdiscrepancy" "integer pixelsamples" [32]
+Sampler "lowdiscrepancy" "integer pixelsamples" [64]
 #Sampler "stratified" "integer xsamples" [1] "integer ysamples" [1]
 PixelFilter "gaussian"
 
@@ -17,30 +17,36 @@ WorldBegin
 
 AttributeBegin
 #Rotate 180 1 0 0
-LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
-#LightSource "infinite" "string mapname" ["textures/grace_latlong.pfm"]
+#LightSource "infinite" "string mapname" ["textures/ufizzi_latlong.exr"]
+#LightSource "infinite" "string mapname" ["textures/rnl_probe.pfm"]
+LightSource "infinite" "string mapname" ["textures/grace_latlong.pfm"]
         "integer nsamples" [512]
 AttributeEnd
 
-AttributeBegin
-Scale 2 2 2
+#AttributeBegin
+#Scale 2 2 2
 #Translate -1 0 -0.5
-Material "glass"
-Shape "sphere" "float radius" [.5]
-AttributeEnd
+#Material "glass"
+#Shape "sphere" "float radius" [.5]
+#AttributeEnd
 
 
-AttributeBegin
-Translate 1 0 -0.1
-Material "mirror"
-Shape "sphere" "float radius" [.4]
-AttributeEnd
+#AttributeBegin
+#Translate 1 0 -0.1
+#Material "mirror"
+#Shape "sphere" "float radius" [.4]
+#AttributeEnd
 
-AttributeBegin
-Translate -1 0 -0.1
-Material "matte"
-Shape "sphere" "float radius" [.4]
-AttributeEnd
+#AttributeBegin
+#Translate 0 0 0
+#Material "glass"
+#Shape "sphere" "float radius" [.4]
+#AttributeEnd
+
+#Include "geometry/ballpile.pbrt"
+	Material "matte"
+    Translate 0 0 0
+    Shape "sphere" "float radius" [0.5]
 
 #AttributeBegin
 #Translate -2 0 -0.5
@@ -49,13 +55,13 @@ AttributeEnd
 #Shape "sphere" "float radius" [.5]
 #AttributeEnd
 
-AttributeBegin
-Scale 0.015 0.015 0.015
-Translate 0 350 -149
-Rotate -180 0 1 0
-Rotate 45 0 0 1
-Material "matte"
-Include "geometry/bunny.pbrt"
-AttributeEnd
+#AttributeBegin
+#Scale 0.015 0.015 0.015
+#Translate 0 350 -149
+#Rotate -180 0 1 0
+#Rotate 45 0 0 1
+#Material "matte"
+#Include "geometry/bunny.pbrt"
+#AttributeEnd
 
 WorldEnd

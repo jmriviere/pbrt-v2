@@ -40,12 +40,12 @@ inline float3 refraction(Color* reflectance, Ray ray, float3 n, float rand) {
 	float Re = R0 + (1-R0) * cost * cost * cost * cost * cost; // Schlick's approximation
 	float Tr = 1.f-Re, P = .25f + .75f * Re;
 
-	if (rand <= P) {
-		*reflectance *= Re/P;
+	if (rand <= 0.5f) {
+		*reflectance *= 2.f * Re;//P;
 		return reflection(ray, n_real);
 	}
 	else {
-	  *reflectance *= Tr/(1-P);
+	  *reflectance *= 2.f * Tr;//(1-P);
 		return transdir;
 	}
 }

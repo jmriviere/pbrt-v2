@@ -191,6 +191,8 @@ InfiniteAreaLight *CreateInfiniteLight(const Transform &light2world,
     return new InfiniteAreaLight(light2world, L * sc, nSamples, texmap);
 }
 
+#include <iostream>
+
 Spectrum InfiniteAreaLight::Sample_L(const Point &p, float pEpsilon,
         const LightSample &ls, float time, Vector *wi, float *pdf,
         VisibilityTester *visibility) const {
@@ -216,6 +218,7 @@ Spectrum InfiniteAreaLight::Sample_L(const Point &p, float pEpsilon,
     Spectrum Ls = Spectrum(radianceMap->Lookup(uv[0], uv[1]),
                            SPECTRUM_ILLUMINANT);
     PBRT_INFINITE_LIGHT_FINISHED_SAMPLE();
+    std::cout << "asdlk;alsdk;alskd;lka;sldk" << std::endl;
     return Ls;
 }
 

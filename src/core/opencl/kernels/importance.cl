@@ -72,17 +72,17 @@ static inline int upper_bound(float u, __global const float* cdf, int size) {
 	return imax;
 }
 
-inline float2 sampleContinuous2D(float u1, float u2, __global const Distribution1D* pConditionalV,
+inline float2 sampleContinuous2D(float u0, float u1, __global const Distribution1D* pConditionalV,
 		Distribution1D pMarginal, __global const float* cdfConditionalV,
 		__global const float* cdfMarginal, __global const float* fun2D,
 		__global const float* fun1D, float* pdf) {
 	int v,vv;
 	float pdfs[2];
 	float s1 = max(sampleContinuous1D(u1, pMarginal, cdfMarginal, fun1D, &v, &pdfs[0]), 0.f);
-	float s2 = max(
-			sampleContinuous1D(u2, pConditionalV[v], cdfConditionalV, fun2D, &vv, &pdfs[1]), 0.f
+	float s0 = max(
+			sampleContinuous1D(u0, pConditionalV[v], cdfConditionalV, fun2D, &vv, &pdfs[1]), 0.f
 			);
-	float2 sample = (float2)(s1, s2);
+	float2 sample = (float2)(s0, s1);
 	*pdf = pdfs[0] * pdfs[1];
 
 	return sample;
@@ -90,13 +90,13 @@ inline float2 sampleContinuous2D(float u1, float u2, __global const Distribution
 
 inline float sampleContinuous1D(float u, Distribution1D distribution, __global const float* cdf,
 		__global const float* func, int* offset, float* pdf) {
-	int off = upper_bound(u, &cdf[distribution.offset], distribution.count);
+	int off = upper_bound(u, &cdf[distribution.offset], distribution.count + 1);
 	*offset = off;
 	// Compute offset along CDF segment
 	float du = (u - cdf[distribution.offset + off]) /
 			(cdf[distribution.offset + off+1] - cdf[distribution.offset + off]);
 	*pdf = func[distribution.offset + off] / distribution.integral;
-	return (off + du) / distribution.count;
+	return (du + off)/distribution.count;
 }
 
 inline float probability(float u, float v,__global const Distribution1D* pConditionalV,

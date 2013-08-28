@@ -119,8 +119,6 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 	uint i = 0;
 	float3 hitpoint;
 
-	int bounces = 2;
-
 	while(true) {
 		rng->c.v[0]++;
 		rng->c.v[1]++;
@@ -131,6 +129,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 		if (!intersect(&hit, ray, meta_prims, prims, nb_prims)) {
 			ray.direction = transform_vect(ray.direction, meta_prims[nb_prims - 1].fromWorld);
+			Color test = lookup(env, ray);
 			cl += reflectance * lookup(env, ray);
 			break;
 		}
@@ -175,24 +174,23 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 				float2 sample = sampleContinuous2D(u1, u2, pConditionalV, pMarginal, cdfConditionalV,
 						cdfMarginal, fun2D, fun1D, &mapPdf);
 
-				if (sample.x < 0 || sample.y < 0)
-					printf((__constant char *)"%v2f\n", sample);
-
 				sample *= sph_coord;
 
-				float costheta = cos(sample.x), sintheta = sin(sample.x);
-				float sinphi = sin(sample.y), cosphi = cos(sample.y);
+//				printf("%v2f\n", sample);
+
+				float costheta = cos(sample.y), sintheta = sin(sample.y);
+				float sinphi = sin(sample.x), cosphi = cos(sample.x);
 
 				float cosi = dot(-ray.direction, n);
 
-				float3 direction = normalize((float3)(sintheta * cosphi, sintheta * sinphi, costheta));
+				float3 direction = -normalize((float3)(sintheta * cosphi, sintheta * sinphi, costheta));
 
-				if (cosi < 0 || mapPdf == 0.f || sintheta == 0.f)
+				if (mapPdf == 0.f || cosi ==0.f || sintheta == 0.f)
 					continue;
 
 				ray.direction = direction;
 
-				reflectance *= 2.f * M_PI * sintheta * cosi/mapPdf;
+				reflectance *= cosi;//mapPdf; //* 2.f *M_PI * M_PI *M_PI * sintheta/mapPdf;//(mapPdf/(2.f*M_PI*M_PI*sintheta));
 				//				float pX = mapPdf/(2.f * M_PI * M_PI * sintheta * cosi);
 				//				float w = 256 * .25 * pX / (256 * .25 * pX + 256 * .75 * 5.f/(2 * M_PI) * pow(costheta, 4) * sintheta);
 				//				reflectance *= w / (0.25f * pX);
