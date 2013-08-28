@@ -17,9 +17,8 @@ WorldBegin
 
 AttributeBegin
 #Rotate 180 1 0 0
-#LightSource "infinite" "string mapname" ["textures/ufizzi_latlong.exr"]
-#LightSource "infinite" "string mapname" ["textures/rnl_probe.pfm"]
-LightSource "infinite" "string mapname" ["textures/grace_latlong.pfm"]
+LightSource "infinite" "string mapname" ["textures/uffizi_latlong.exr"]
+#LightSource "infinite" "string mapname" ["textures/grace_latlong.pfm"]
         "integer nsamples" [512]
 AttributeEnd
 
