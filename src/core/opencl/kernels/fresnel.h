@@ -27,7 +27,7 @@ inline float3 refraction(Color* reflectance, Ray ray, float3 n, float rand) {
 	float cos2t = 1 - eta1Overeta2 * eta1Overeta2 * (1 - cosi * cosi);
 
 	if (cos2t < 0) { // Total Internal Reflection
-		return reflection(ray, n_real);
+	  return reflection(ray, n);
 	}
 
 	float3 transdir = normalize(eta1Overeta2 * ray.direction - n_real *
@@ -36,16 +36,18 @@ inline float3 refraction(Color* reflectance, Ray ray, float3 n, float rand) {
 	float num = ETA_GLASS-ETA_VACUUM;
 	float denom = ETA_VACUUM + ETA_GLASS;
 	float R0 = num * num/(denom * denom);
-	float cost = 1-(outside?-cosi:dot(n, transdir));
+	float3 halfway = (transdir + ray.direction);
+	halfway /= dot(halfway, halfway);
+	float cost = 1-dot(halfway, transdir);
 	float Re = R0 + (1-R0) * cost * cost * cost * cost * cost; // Schlick's approximation
 	float Tr = 1.f-Re, P = .25f + .75f * Re;
 
-	if (rand <= 0.5f) {
-		*reflectance *= 2.f * Re;//P;
+	if (rand <= P) {
+		*reflectance *= Re/P;
 		return reflection(ray, n_real);
 	}
 	else {
-	  *reflectance *= 2.f * Tr;//(1-P);
+	  *reflectance *= Tr/(1-P);
 		return transdir;
 	}
 }

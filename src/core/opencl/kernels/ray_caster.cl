@@ -100,6 +100,7 @@ inline Color lookup(image2d_t env, Ray ray) {
 	float x = (phi < 0.f ? phi + 2.f * M_PI : phi)/(2.f * M_PI);
 	float y = theta/M_PI;
 	Color c = read_imagef(env, sampler, (float2)(x,y));
+	c /= sqrt(dot(c,c));
 	return c;
 }
 
@@ -119,6 +120,8 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 	uint i = 0;
 	float3 hitpoint;
 
+	OCLMaterial prev = -1;
+
 	while(true) {
 		rng->c.v[0]++;
 		rng->c.v[1]++;
@@ -135,13 +138,12 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		}
 
 		if (i++ >= 3) {
-			break;
-			//			if (rand < 0.4) {
-//				reflectance /= 0.6;
-//			}
-//			else {
-//				break;
-//			}
+		  if (rand < 0.4) {
+		    reflectance /= 0.6;
+		  }
+		  else {
+		    break;
+		  }
 		}
 
 		if (hit.t < 1e-2f && hit.selfisect) {
@@ -155,16 +157,22 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 		switch (meta_prims[hit.id].mat) {
 		case SPEC:
+		  if (prev == DIFF)
+		    goto derp;
 			ray.direction = reflection(ray, n);
+			prev = SPEC;
 			break;
 		case REFR:
 			{
 				float rand = u01_open_open_32_24(r.v[1]);
 				ray.direction = refraction(&reflectance, ray, n, rand);
+				prev = REFR;
 				break;
 			}
 		case DIFF:
 		diffuse:
+		  if (prev == DIFF)
+		    goto derp;
 			{
 				float u1 = u01_open_open_32_24(r.v[0]);
 				float u2 = u01_open_open_32_24(r.v[1]);
@@ -183,21 +191,26 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 				float cosi = dot(-ray.direction, n);
 
-				float3 direction = -normalize((float3)(sintheta * cosphi, sintheta * sinphi, costheta));
+				float3 direction = normalize((float3)(sintheta * cosphi, sintheta * sinphi, costheta));
 
-				if (mapPdf == 0.f || cosi ==0.f || sintheta == 0.f)
-					continue;
+				if (cosi < 0.f || mapPdf == 0.f || sintheta == 0)
+					goto derp;
 
 				ray.direction = direction;
 
-				reflectance *= cosi;//mapPdf; //* 2.f *M_PI * M_PI *M_PI * sintheta/mapPdf;//(mapPdf/(2.f*M_PI*M_PI*sintheta));
+				Hit h;
+
+				reflectance *= cosi * 2.f * M_PI * sintheta/mapPdf;
 				//				float pX = mapPdf/(2.f * M_PI * M_PI * sintheta * cosi);
 				//				float w = 256 * .25 * pX / (256 * .25 * pX + 256 * .75 * 5.f/(2 * M_PI) * pow(costheta, 4) * sintheta);
 				//				reflectance *= w / (0.25f * pX);
+				prev = DIFF;
 				break;
 			}
 
 		case ROUGH:
+		  if (prev == DIFF)
+		    goto derp;
 			{
 				float criterion = u01_open_open_32_24(r.v[1]);
 				float3 z = reflection(ray, n);
@@ -234,9 +247,6 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 					float2 sample = sampleContinuous2D(eps1, eps2, pConditionalV, pMarginal, cdfConditionalV,
 							cdfMarginal, fun2D, fun1D, &mapPdf);
 
-					if (sample.x < 0 || sample.y < 0)
-						printf((__constant char *)"%v2f\n", sample);
-
 					sample *= sph_coord;
 
 					float costheta = cos(sample.x), sintheta = sin(sample.x);
@@ -247,21 +257,23 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 					float3 direction = normalize((float3)(sintheta * cosphi, sintheta * sinphi, costheta));
 
 					if (cosi < 0 || mapPdf == 0.f || sintheta == 0.f)
-						continue;
+					  goto derp;
 
 					ray.direction = direction;
 
 					//	reflectance *= 2.f * M_PI * sintheta * cosi/mapPdf;
-					float pX = mapPdf/(2.f * M_PI * M_PI * sintheta * cosi);
+					float pX = cosi * 2.f * M_PI * sintheta/mapPdf;
 					float w = 128 * 0.25f * pX / (128 * .25f * pX + 128 * 0.75f * 50.f/(2 * M_PI) * pow(costheta, 49) * sintheta);
 					reflectance *= w / (0.25f * pX);
 				}
+				prev = ROUGH;
 				break;
 			}
 		default:
 			break;
 		}
 	}
+ derp:
 	return cl;
 }
 

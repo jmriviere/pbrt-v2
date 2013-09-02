@@ -1,66 +1,50 @@
-LookAt 0 5 0    0 0 0   0 0 -1
+LookAt 0 5 0   0 0 0   0 0 -1
 Camera "perspective" "float fov" [22]
 
-#Renderer "ocl"
+Renderer "ocl"
 
 Film "image" "integer xresolution" [800] "integer yresolution" [400]
-#"string filename" "gpu.exr"
+"string filename" "gpu.exr"
 
 SurfaceIntegrator "path" "integer maxdepth" [3]
 "string strategy" "all"
 
-Sampler "lowdiscrepancy" "integer pixelsamples" [64]
+Sampler "lowdiscrepancy" "integer pixelsamples" [256]
 #Sampler "stratified" "integer xsamples" [1] "integer ysamples" [1]
-PixelFilter "gaussian"
+PixelFilter "box"
 
 WorldBegin
 
 AttributeBegin
 #Rotate 180 1 0 0
-LightSource "infinite" "string mapname" ["textures/uffizi_latlong.exr"]
+LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
 #LightSource "infinite" "string mapname" ["textures/grace_latlong.pfm"]
-        "integer nsamples" [512]
+        "integer nsamples" [128]
 AttributeEnd
 
 #AttributeBegin
-#Scale 2 2 2
-#Translate -1 0 -0.5
-#Material "glass"
-#Shape "sphere" "float radius" [.5]
-#AttributeEnd
-
-
-#AttributeBegin
-#Translate 1 0 -0.1
+#Translate 1 0 -0.5
 #Material "mirror"
-#Shape "sphere" "float radius" [.4]
-#AttributeEnd
-
-#AttributeBegin
-#Translate 0 0 0
-#Material "glass"
-#Shape "sphere" "float radius" [.4]
-#AttributeEnd
-
-#Include "geometry/ballpile.pbrt"
-	Material "matte"
-    Translate 0 0 0
-    Shape "sphere" "float radius" [0.5]
-
-#AttributeBegin
-#Translate -2 0 -0.5
-#Material "substrate" "float uroughness" [0.] "float vroughness" [0.]
-#"color Kr" [0. 0. 0.] "color Kd" [1. 1. 1.]
 #Shape "sphere" "float radius" [.5]
 #AttributeEnd
 
+
+AttributeBegin
+#Translate 0 0 0
+Material "diffuse"
+Shape "sphere" "float radius" [.5]
+AttributeEnd
+
 #AttributeBegin
-#Scale 0.015 0.015 0.015
-#Translate 0 350 -149
-#Rotate -180 0 1 0
-#Rotate 45 0 0 1
+#Translate 0 0 10
 #Material "matte"
-#Include "geometry/bunny.pbrt"
+#Shape "sphere" "float radius" [10]
+#AttributeEnd
+
+#AttributeBegin
+#Translate -1 0 -0.5
+#Material "substrate"
+#Shape "sphere" "float radius" [0.5]
 #AttributeEnd
 
 WorldEnd

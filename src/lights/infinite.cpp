@@ -218,7 +218,6 @@ Spectrum InfiniteAreaLight::Sample_L(const Point &p, float pEpsilon,
     Spectrum Ls = Spectrum(radianceMap->Lookup(uv[0], uv[1]),
                            SPECTRUM_ILLUMINANT);
     PBRT_INFINITE_LIGHT_FINISHED_SAMPLE();
-    std::cout << "asdlk;alsdk;alskd;lka;sldk" << std::endl;
     return Ls;
 }
 
