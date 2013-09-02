@@ -65,20 +65,44 @@ inline bool ray_sphere_intersection(Hit* hit, Ray ray, Metadata m_sphere, __glob
 	return true;
 }
 
+inline void ray_triangles_intersect(Hit* hit, Ray ray) {
+  Triangle t[2] = { {.P1 = (float3)(-8,-10,0), .P2 = (float3)(8,-10,0), .P3 = (float3)(8,10,0)} , {.P1 = (float3)(8,10,0), .P2 = (float3)(-8,10,0), .P3 = (float3)(-8,-10,0)} };
+  printf("%v3f\n", cross(t[1].P1 - t[1].P3, t[1].P2 - t[1].P3));
+  for (uint i = 0; i < 2; ++i) {
+    float3 e1 = t[i].P2 - t[i].P1;
+    float3 e2 = t[i].P3 - t[i].P1;
+    float3 s1 = cross(ray.direction,e2);
+    float divisor = dot(s1,e1);
+    if (divisor == 0.f)
+      continue;
+    float invDivisor = 1.f/divisor;
+    float3 d = ray.origin - t[i].P1;
+    float b1 = dot(d,s1) * invDivisor;
+    if (b1 < 0.f || b1 > 1.f)
+      continue;
+    float3 s2 = cross(d,e1);
+    float b2 = dot(ray.direction, s2) * invDivisor;
+    if (b2 < 0.f || b2 > 1.f)
+      continue;
+    hit->t = dot(e2,s2) * invDivisor;
+    if (hit->t < 1e3f)
+      return;
+  }
+}
+
 inline bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims,
 		__global float* prims, int nb_prims) {
 	float temp;
 	hit->t = 1e5f;
 	hit->selfisect = false;
-
 	for (uint i = 0; i < nb_prims - 1; ++i) {
 		switch (meta_prims[i].type) {
 		case sphere:
 			temp = hit->t;
 			if (ray_sphere_intersection(hit, ray, meta_prims[i], prims) && hit->t < temp) {
-				if (hit->id == i && hit->t < 1e-2f)
-					hit->selfisect = true;
-				hit->id = i;
+			  if (hit->id == i && hit->t < 1e-2f)
+			    hit->selfisect = true;
+			  hit->id = i;
 			}
 			else {
 				hit->t = temp;
@@ -87,6 +111,10 @@ inline bool intersect(Hit* hit, Ray ray, __global Metadata* meta_prims,
 		default:
 			break;
 		}
+	}
+	if (hit->t >= 1e5f) {
+	  ray_triangles_intersect(hit, ray);
+	  hit->id = -1;
 	}
 	return hit->t < 1e5f;
 }
@@ -152,7 +180,15 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		}
 
 		hitpoint = ray.origin + hit.t * ray.direction; // hitpoint in world space
-		float3 n = normalize(transform_point(hitpoint, meta_prims[hit.id].fromWorld));
+
+		float3 n;
+		if (hit.id < 0) {
+		  n = (float3)(0,-1,0);
+		  goto diffuse;
+		}
+
+		n = normalize(transform_point(hitpoint, meta_prims[hit.id].fromWorld));
+
 		ray.origin = hitpoint;
 
 		switch (meta_prims[hit.id].mat) {
@@ -319,5 +355,4 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 		}
 
 		Ls[yPos * width + xPos] = pixel/spp;
-
 	}

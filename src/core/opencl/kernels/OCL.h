@@ -62,6 +62,12 @@ typedef struct s_sphere {
 	float radius;
 } Sphere;
 
+typedef struct s_triangle {
+  float3 P1;
+  float3 P2;
+  float3 P3;
+} Triangle;
+
 typedef struct s_hit {
 	int id;
 	float t;
@@ -99,5 +105,11 @@ inline float3 transform_point(float3 r, Transformation t) {
 
 	return ret;
 }
+
+// These triangles are used to represent a
+// plane
+
+__constant Triangle t[2] = { {.P1 = (float3)(-8,10,0), .P2 = (float3)(8,-10,0), .P3 = (float3)(8,10,0)} , {.P1 = (float3)(8,10,0), .P2 = (float3)(-8,10,0), .P3 = (float3)(-8,-10,0)} };
+//__constant Triangle t2 = {.P0 = (float3)(8,10,0), .P1 = (float3)(-8,10,0), .P2 = (float3)(-8,-10,0)};
 
 #endif /* OCL_H_ */
