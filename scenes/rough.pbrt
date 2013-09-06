@@ -1,0 +1,33 @@
+LookAt 0 5 0   0 0 0   0 0 -1
+Camera "perspective" "float fov" [22]
+
+Renderer "ocl"
+
+Film "image" "integer xresolution" [800] "integer yresolution" [400]
+"string filename" "gpu.exr"
+
+SurfaceIntegrator "path" "integer maxdepth" [3]
+"string strategy" "one"
+
+Sampler "random" "integer pixelsamples" [64000]
+PixelFilter "box"
+
+WorldBegin
+
+AttributeBegin
+#Rotate 180 0 1 0
+#LightSource "infinite" "string mapname" ["textures/uffizi_latlong.exr"]
+#LightSource "infinite" "string mapname" ["textures/grace-new_latlong.exr"]
+LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
+#LightSource "infinite" "string mapname" ["textures/galileo_latlong.exr"]
+#LightSource "infinite" "string mapname" ["textures/pisa_latlong.exr"]
+        "integer nsamples" [64]
+AttributeEnd
+
+AttributeBegin
+Translate 0 0 0
+Material "substrate"
+Shape "sphere" "float radius" [.5]
+AttributeEnd
+
+WorldEnd
