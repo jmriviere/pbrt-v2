@@ -288,6 +288,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 					reflectance *= w / (0.25f * pX);
 					prev = ROUGH;
 					break;
+				}
 			}
 		default:
 			break;
