@@ -23,10 +23,10 @@ DEFS=-DPBRT_HAS_OPENEXR
 #MARCH=-m32 -msse2 -mfpmath=sse
 
 # 64 bit
-MARCH=-m64
+MARCH=-m64 #-mavx -mfpmath=sse
 
 # change this to -g3 for debug builds
-#OPT=-O2
+#OPT=-O3
 OPT=-g3
 # comment out this line to enable assertions at runtime
 DEFS += -DNDEBUG

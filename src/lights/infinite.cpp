@@ -287,10 +287,9 @@ uint32_t InfiniteAreaLight::toRawData(Metadata* meta, void* data) const {
 	    float filter = 1.f / max(width, height);
 	    for (uint32_t v = 0; v < height; ++v) {
 	        float vp = (float)v / (float)height;
-	        float sinTheta = sinf(M_PI * float(v+.5f)/float(height));
 	        for (uint32_t u = 0; u < width; ++u) {
 	            float up = (float)u / (float)width;
-	            Spectrum s = radianceMap->Lookup(up, vp, filter) * sinTheta;
+	            Spectrum s = radianceMap->Lookup(up, vp, filter);
 				s.ToRGB(rgb);
 				rgb[3] = 1.0;
 				std::memcpy(&((float *)data)[4 * (v * radianceMap->Width() +  u)], rgb, sizeof(rgb));

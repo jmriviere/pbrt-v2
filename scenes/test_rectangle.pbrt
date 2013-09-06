@@ -1,7 +1,7 @@
 LookAt 0 20 -10    0 0 0   0 0 -1
 Camera "perspective" "float fov" [22]
 
-Renderer "gpu"
+Renderer "ocl"
 
 Film "image" "integer xresolution" [800] "integer yresolution" [400]
 "string filename" "rectangle.exr"
@@ -9,7 +9,7 @@ Film "image" "integer xresolution" [800] "integer yresolution" [400]
 SurfaceIntegrator "path" "integer maxdepth" [3]
 "string strategy" "all"
 
-Sampler "lowdiscrepancy" "integer pixelsamples" [32]
+Sampler "lowdiscrepancy" "integer pixelsamples" [256]
 PixelFilter "gaussian"
 
 WorldBegin

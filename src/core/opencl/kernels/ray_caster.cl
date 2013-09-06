@@ -100,7 +100,7 @@ inline Color lookup(image2d_t env, Ray ray) {
 	float x = (phi < 0.f ? phi + 2.f * M_PI : phi)/(2.f * M_PI);
 	float y = theta/M_PI;
 	Color c = read_imagef(env, sampler, (float2)(x,y));
-	c /= sqrt(dot(c,c));
+	//	c /= sqrt(dot(c,c));
 	return c;
 }
 
@@ -157,8 +157,12 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 		switch (meta_prims[hit.id].mat) {
 		case SPEC:
-		  if (prev == DIFF)
-		    goto derp;
+		  if (prev == DIFF) {
+		     //cl.w = 1;
+		     //return cl;
+		     break;		     
+//return (float4)(0,0,0,1);
+		  }
 			ray.direction = reflection(ray, n);
 			prev = SPEC;
 			break;
@@ -170,14 +174,17 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 				break;
 			}
 		case DIFF:
-		diffuse:
-		  if (prev == DIFF)
-		    goto derp;
+		  if (prev == DIFF) {
+//		     cl.w = 1;
+//		     return cl;
+break;
+		     //return (float4)(0,0,0,1);
+		  }
 			{
 				float u1 = u01_open_open_32_24(r.v[0]);
 				float u2 = u01_open_open_32_24(r.v[1]);
 
-				float mapPdf;
+				/*				float mapPdf;
 
 				float2 sample = sampleContinuous2D(u1, u2, pConditionalV, pMarginal, cdfConditionalV,
 						cdfMarginal, fun2D, fun1D, &mapPdf);
@@ -193,8 +200,12 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 				float3 direction = normalize((float3)(sintheta * cosphi, sintheta * sinphi, costheta));
 
-				if (cosi < 0.f || mapPdf == 0.f || sintheta == 0)
-					goto derp;
+				if (cosi < 0.f || mapPdf == 0.f || sintheta == 0) {
+//		   		  cl.w = 1;
+//				  return cl;
+break;
+//				  return (float4)(0,0,0,1);
+		  		}
 
 				ray.direction = direction;
 
@@ -203,14 +214,42 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 				reflectance *= cosi * 2.f * M_PI * sintheta/mapPdf;
 				//				float pX = mapPdf/(2.f * M_PI * M_PI * sintheta * cosi);
 				//				float w = 256 * .25 * pX / (256 * .25 * pX + 256 * .75 * 5.f/(2 * M_PI) * pow(costheta, 4) * sintheta);
-				//				reflectance *= w / (0.25f * pX);
+				//				reflectance *= w / (0.25f * pX);*/
+				float theta = acos(sqrt(1.0 - u1));
+				float phi = 2.0 * M_PI * u2;
+
+				float xs = sin(theta) * cos(phi);
+				float ys = sin(theta) * sin(phi);
+				float zs = cos(theta);
+
+				float3 h = n;
+
+				if (fabs(h.x) <= fabs(h.y) && fabs(h.x) <= fabs(h.z)) {
+				  h.x = 1.0;
+				}
+				else if (fabs(h.y) <= fabs(h.x) && fabs(h.y) <= fabs(h.z)) {
+				  h.y = 1.0;
+				}
+				else {
+				  h.z = 1.0;
+				}
+
+				float3 x = normalize(cross(h, n));
+				float3 y = normalize(cross(x, n));
+
+				ray.direction = (float3)normalize(xs * x + ys * y + zs * n);
+				//reflectance *= M_PI / (cos(theta) * sin(theta));
 				prev = DIFF;
 				break;
 			}
 
 		case ROUGH:
-		  if (prev == DIFF)
-		    goto derp;
+		  if (prev == DIFF) {
+//		     cl.w = 1;
+//		     return cl;
+break;
+//		     return (float4)(0,0,0,1);
+		  }
 			{
 				float criterion = u01_open_open_32_24(r.v[1]);
 				float3 z = reflection(ray, n);
@@ -242,8 +281,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 					reflectance *= 50.f/(2 * M_PI) * pow(cos(theta), 49) * sin(theta);
 				}
 				else {
-					//					goto diffuse;
-					float mapPdf;
+				  					float mapPdf;
 					float2 sample = sampleContinuous2D(eps1, eps2, pConditionalV, pMarginal, cdfConditionalV,
 							cdfMarginal, fun2D, fun1D, &mapPdf);
 
@@ -256,15 +294,41 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 					float3 direction = normalize((float3)(sintheta * cosphi, sintheta * sinphi, costheta));
 
-					if (cosi < 0 || mapPdf == 0.f || sintheta == 0.f)
-					  goto derp;
+					if (cosi < 0 || mapPdf == 0.f || sintheta == 0.f) {
+		     		//	   cl.w = 1;
+		     		//	   return cl;
+					  //break;
+					  return cl;
+//				return (float4)(0,0,0,1);
+		  			}
 
 					ray.direction = direction;
 
 					//	reflectance *= 2.f * M_PI * sintheta * cosi/mapPdf;
 					float pX = cosi * 2.f * M_PI * sintheta/mapPdf;
-					float w = 128 * 0.25f * pX / (128 * .25f * pX + 128 * 0.75f * 50.f/(2 * M_PI) * pow(costheta, 49) * sintheta);
-					reflectance *= w / (0.25f * pX);
+					//float w = 128 * 0.25f * pX / (128 * .25f * pX + 128 * 0.75f * 50.f/(2 * M_PI) * pow(costheta, 49) * sintheta);
+					reflectance *= pX;/*w / (0.25f * pX);
+				  int abortCounter = 0;
+				  while(true)
+				    {
+				      float3 b = (float3)(criterion - 0.5f, eps1 - 0.5f, eps2 - 0.5f);
+				      //b.normalize();
+				      b = normalize(b);
+
+				      if (dot(b, n) < 0)
+					{
+					  ray.direction = b;
+					  reflectance *= 2.f;
+					  break;
+					}
+
+				      abortCounter++;
+				      if (abortCounter > 500)
+					{
+					  break;
+					  //return b; // for some reason (NaN's perhaps) we don't found a normal 
+					}
+					}*/
 				}
 				prev = ROUGH;
 				break;
@@ -273,7 +337,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 			break;
 		}
 	}
- derp:
+	cl.w = 1;
 	return cl;
 }
 
