@@ -18,10 +18,9 @@ AttributeBegin
 #Rotate 180 0 1 0
 #LightSource "infinite" "string mapname" ["textures/uffizi_latlong.exr"]
 #LightSource "infinite" "string mapname" ["textures/grace-new_latlong.exr"]
-#LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
+LightSource "infinite" "string mapname" ["textures/grace_latlong.exr"]
 #LightSource "infinite" "string mapname" ["textures/galileo_latlong.exr"]
 #LightSource "infinite" "string mapname" ["textures/pisa_latlong.exr"]
-LightSource "infinite" "string mapname" ["textures/eucalyptus_grove_latlong.pfm"]
         "integer nsamples" [64]
 AttributeEnd
 

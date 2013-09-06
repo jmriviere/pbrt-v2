@@ -100,7 +100,6 @@ inline Color lookup(image2d_t env, Ray ray) {
 	float x = (phi < 0.f ? phi + 2.f * M_PI : phi)/(2.f * M_PI);
 	float y = theta/M_PI;
 	Color c = read_imagef(env, sampler, (float2)(x,y));
-	//	c /= sqrt(dot(c,c));
 	return c;
 }
 
@@ -122,6 +121,7 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 	OCLMaterial prev = -1;
 
+	/*Path-tracer - main loop*/
 	while(true) {
 		rng->c.v[0]++;
 		rng->c.v[1]++;
@@ -137,15 +137,17 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 			break;
 		}
 
+		/* Russian Roulette */
 		if (i++ >= 3) {
-		  if (rand < 0.4) {
-		    reflectance /= 0.6;
-		  }
-		  else {
-		    break;
-		  }
+			if (rand < 0.4) {
+				reflectance /= 0.6;
+			}
+			else {
+				break;
+			}
 		}
 
+		/* Self-intersection */
 		if (hit.t < 1e-2f && hit.selfisect) {
 			ray.origin += 1e-2f * ray.direction;
 			continue;
@@ -157,41 +159,32 @@ Color radiance(image2d_t env, Ray ray, __global Metadata* meta_prims, __global f
 
 		switch (meta_prims[hit.id].mat) {
 		case SPEC:
-		  if (prev == DIFF) {
-		     //cl.w = 1;
-		     //return cl;
-		     break;		     
-//return (float4)(0,0,0,1);
-		  }
+			if (prev == DIFF)
+				break;
 			ray.direction = reflection(ray, n);
 			prev = SPEC;
 			break;
 		case REFR:
-			{
-				float rand = u01_open_open_32_24(r.v[1]);
-				ray.direction = refraction(&reflectance, ray, n, rand);
-				prev = REFR;
-				break;
-			}
+		{
+			float rand = u01_open_open_32_24(r.v[1]);
+			ray.direction = refraction(&reflectance, ray, n, rand);
+			prev = REFR;
+			break;
+		}
 		case DIFF:
-		  if (prev == DIFF) {
-//		     cl.w = 1;
-//		     return cl;
-break;
-		     //return (float4)(0,0,0,1);
-		  }
+			if (prev == DIFF)
+				break;
 			{
 				float u1 = u01_open_open_32_24(r.v[0]);
 				float u2 = u01_open_open_32_24(r.v[1]);
 
-				/*				float mapPdf;
+				float mapPdf;
 
 				float2 sample = sampleContinuous2D(u1, u2, pConditionalV, pMarginal, cdfConditionalV,
 						cdfMarginal, fun2D, fun1D, &mapPdf);
 
 				sample *= sph_coord;
 
-//				printf("%v2f\n", sample);
 
 				float costheta = cos(sample.y), sintheta = sin(sample.y);
 				float sinphi = sin(sample.x), cosphi = cos(sample.x);
@@ -200,22 +193,17 @@ break;
 
 				float3 direction = normalize((float3)(sintheta * cosphi, sintheta * sinphi, costheta));
 
-				if (cosi < 0.f || mapPdf == 0.f || sintheta == 0) {
-//		   		  cl.w = 1;
-//				  return cl;
-break;
-//				  return (float4)(0,0,0,1);
-		  		}
+				if (cosi < 0.f || mapPdf == 0.f || sintheta == 0)
+					break;
 
 				ray.direction = direction;
 
 				Hit h;
 
 				reflectance *= cosi * 2.f * M_PI * sintheta/mapPdf;
-				//				float pX = mapPdf/(2.f * M_PI * M_PI * sintheta * cosi);
-				//				float w = 256 * .25 * pX / (256 * .25 * pX + 256 * .75 * 5.f/(2 * M_PI) * pow(costheta, 4) * sintheta);
-				//				reflectance *= w / (0.25f * pX);*/
-				float theta = acos(sqrt(1.0 - u1));
+
+				/* --- Cosine-weighted ---*/
+/*				float theta = acos(sqrt(1.0 - u1));
 				float phi = 2.0 * M_PI * u2;
 
 				float xs = sin(theta) * cos(phi);
@@ -225,31 +213,26 @@ break;
 				float3 h = n;
 
 				if (fabs(h.x) <= fabs(h.y) && fabs(h.x) <= fabs(h.z)) {
-				  h.x = 1.0;
+					h.x = 1.0;
 				}
 				else if (fabs(h.y) <= fabs(h.x) && fabs(h.y) <= fabs(h.z)) {
-				  h.y = 1.0;
+					h.y = 1.0;
 				}
 				else {
-				  h.z = 1.0;
+					h.z = 1.0;
 				}
 
 				float3 x = normalize(cross(h, n));
 				float3 y = normalize(cross(x, n));
 
-				ray.direction = (float3)normalize(xs * x + ys * y + zs * n);
-				//reflectance *= M_PI / (cos(theta) * sin(theta));
+				ray.direction = (float3)normalize(xs * x + ys * y + zs * n);*/
 				prev = DIFF;
 				break;
 			}
 
 		case ROUGH:
-		  if (prev == DIFF) {
-//		     cl.w = 1;
-//		     return cl;
-break;
-//		     return (float4)(0,0,0,1);
-		  }
+			if (prev == DIFF)
+				break;
 			{
 				float criterion = u01_open_open_32_24(r.v[1]);
 				float3 z = reflection(ray, n);
@@ -281,7 +264,8 @@ break;
 					reflectance *= 50.f/(2 * M_PI) * pow(cos(theta), 49) * sin(theta);
 				}
 				else {
-				  					float mapPdf;
+					/*--- Test with MIS ---*/
+					float mapPdf;
 					float2 sample = sampleContinuous2D(eps1, eps2, pConditionalV, pMarginal, cdfConditionalV,
 							cdfMarginal, fun2D, fun1D, &mapPdf);
 
@@ -294,44 +278,16 @@ break;
 
 					float3 direction = normalize((float3)(sintheta * cosphi, sintheta * sinphi, costheta));
 
-					if (cosi < 0 || mapPdf == 0.f || sintheta == 0.f) {
-		     		//	   cl.w = 1;
-		     		//	   return cl;
-					  //break;
-					  return cl;
-//				return (float4)(0,0,0,1);
-		  			}
+					if (cosi < 0 || mapPdf == 0.f || sintheta == 0.f)
+						break;
 
 					ray.direction = direction;
 
-					//	reflectance *= 2.f * M_PI * sintheta * cosi/mapPdf;
 					float pX = cosi * 2.f * M_PI * sintheta/mapPdf;
-					//float w = 128 * 0.25f * pX / (128 * .25f * pX + 128 * 0.75f * 50.f/(2 * M_PI) * pow(costheta, 49) * sintheta);
-					reflectance *= pX;/*w / (0.25f * pX);
-				  int abortCounter = 0;
-				  while(true)
-				    {
-				      float3 b = (float3)(criterion - 0.5f, eps1 - 0.5f, eps2 - 0.5f);
-				      //b.normalize();
-				      b = normalize(b);
-
-				      if (dot(b, n) < 0)
-					{
-					  ray.direction = b;
-					  reflectance *= 2.f;
-					  break;
-					}
-
-				      abortCounter++;
-				      if (abortCounter > 500)
-					{
-					  break;
-					  //return b; // for some reason (NaN's perhaps) we don't found a normal 
-					}
-					}*/
-				}
-				prev = ROUGH;
-				break;
+					float w = 128 * 0.25f * pX / (128 * .25f * pX + 128 * 0.75f * 50.f/(2 * M_PI) * pow(costheta, 49) * sintheta);
+					reflectance *= w / (0.25f * pX);
+					prev = ROUGH;
+					break;
 			}
 		default:
 			break;
@@ -341,47 +297,48 @@ break;
 	return cl;
 }
 
-	__kernel void ray_cast(__global float4* Ls, __global OCLCamera* cam, uint width, int spp,
-			int nb_prims, __global Metadata* meta_prims, __global float* prims,
-			__read_only image2d_t env, __global const Distribution1D* pConditionalV,
-			__global Distribution1D* pMarginal, __global const float* cdfConditionalV,
-			__global const float* cdfMarginal, __global const float* fun2D,
-			__global const float* fun1D) {
+__kernel void ray_cast(__global float4* Ls, __global OCLCamera* cam, uint width, int spp,
+		int nb_prims, __global Metadata* meta_prims, __global float* prims,
+		__read_only image2d_t env, __global const Distribution1D* pConditionalV,
+		__global Distribution1D* pMarginal, __global const float* cdfConditionalV,
+		__global const float* cdfMarginal, __global const float* fun2D,
+		__global const float* fun1D) {
 
-		int xPos = get_global_id(0);
-		int yPos = get_global_id(1);
+	int xPos = get_global_id(0);
+	int yPos = get_global_id(1);
 
-		RNG rng;
+	RNG rng;
 
-		threefry4x32_key_t k = {{xPos, 0xdecafbad, 0xfacebead, 0x12345678}};
-		threefry4x32_ctr_t c = {{yPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};
+	threefry4x32_key_t k = {{xPos, 0xdecafbad, 0xfacebead, 0x12345678}};
+	threefry4x32_ctr_t c = {{yPos, 0xf00dcafe, 0xdeadbeef, 0xbeeff00d}};
 
-		rng.k = k;
-		rng.c = c;
+	rng.k = k;
+	rng.c = c;
 
-		threefry4x32_ctr_t r;
+	threefry4x32_ctr_t r;
 
 
-		float sample_x, sample_y;
-		float rand_x, rand_y;
+	float sample_x, sample_y;
+	float rand_x, rand_y;
 
-		Color pixel = (Color)(0, 0, 0, 0);
+	Color pixel = (Color)(0, 0, 0, 0);
 
-		for (uint i = 0; i < spp; i++) {
-			r = threefry4x32(rng.c , rng.k);
+	for (uint i = 0; i < spp; i++) {
+		r = threefry4x32(rng.c , rng.k);
 
-			rand_x = u01_open_open_32_24(r.v[0]);
-			rand_y = u01_open_open_32_24(r.v[1]);
+		// Image-plane sampling
+		rand_x = u01_open_open_32_24(r.v[0]);
+		rand_y = u01_open_open_32_24(r.v[1]);
 
-			sample_x = ((float)xPos + rand_x);
-			sample_y = ((float)yPos + rand_y);
+		sample_x = ((float)xPos + rand_x);
+		sample_y = ((float)yPos + rand_y);
 
-			Ray ray = generate_ray(*cam, (float2)(sample_x, sample_y));
+		Ray ray = generate_ray(*cam, (float2)(sample_x, sample_y));
 
-			pixel += radiance(env, ray, meta_prims, prims, nb_prims, &rng, pConditionalV,
-					*pMarginal, cdfConditionalV, cdfMarginal, fun2D, fun1D);
-		}
-
-		Ls[yPos * width + xPos] = pixel/spp;
-
+		pixel += radiance(env, ray, meta_prims, prims, nb_prims, &rng, pConditionalV,
+				*pMarginal, cdfConditionalV, cdfMarginal, fun2D, fun1D);
 	}
+
+	Ls[yPos * width + xPos] = pixel/spp;
+
+}
